@@ -1,0 +1,48 @@
+{
+  "name": "english-quiz-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build --turbopack",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@breezystack/lamejs": "^1.2.7",
+    "@copilotkit/react-core": "^1.10.5",
+    "@copilotkit/react-textarea": "^1.10.5",
+    "@copilotkit/react-ui": "^1.10.5",
+    "@hookform/resolvers": "^5.2.1",
+    "@tailwindcss/typography": "^0.5.19",
+    "@types/sass": "^1.43.1",
+    "axios": "^1.11.0",
+    "clsx": "^2.1.1",
+    "gtag": "^1.0.1",
+    "highlight.js": "11.11.1",
+    "lucide-react": "^0.542.0",
+    "next": "15.5.2",
+    "react": "19.1.0",
+    "react-audio-visualize": "^1.2.0",
+    "react-dom": "19.1.0",
+    "react-hook-form": "^7.62.0",
+    "react-markdown": "10.1.0",
+    "rehype-highlight": "7.0.2",
+    "remark-gfm": "4.0.1",
+    "sass": "^1.92.1",
+    "tailwind-merge": "^3.3.1",
+    "zod": "^4.1.5"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.21",
+    "eslint": "^9",
+    "eslint-config-next": "15.5.2",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5"
+  }
+}

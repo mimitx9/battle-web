@@ -1,0 +1,1122 @@
+
+position: relative;
+width: 1440px;
+height: 2060px;
+
+background: #FFFFFF;
+
+
+/* Rectangle 914 */
+
+position: absolute;
+width: 1440px;
+height: 80px;
+left: 0px;
+top: 0px;
+
+background: #FFFFFF;
+border: 1px solid rgba(0, 0, 0, 0.05);
+
+
+/* image 9 */
+
+position: absolute;
+width: 188px;
+height: 30px;
+left: 48px;
+top: 25px;
+
+background: url(image.png);
+
+
+/* Trang chủ */
+
+position: absolute;
+width: 71px;
+height: 19px;
+left: 542px;
+top: 31px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 400;
+font-size: 16px;
+line-height: 19px;
+/* identical to box height */
+display: flex;
+align-items: center;
+text-align: center;
+
+color: rgba(0, 0, 0, 0.5);
+
+
+
+/* Nâng Pro */
+
+position: absolute;
+width: 67px;
+height: 19px;
+left: 697px;
+top: 31px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 400;
+font-size: 16px;
+line-height: 19px;
+/* identical to box height */
+display: flex;
+align-items: center;
+text-align: center;
+
+color: rgba(0, 0, 0, 0.5);
+
+
+
+/* Đặc quyền của các gói Pro */
+
+position: absolute;
+width: 189px;
+height: 19px;
+left: 636px;
+top: 364px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 400;
+font-size: 16px;
+line-height: 19px;
+/* identical to box height */
+display: flex;
+align-items: center;
+text-align: center;
+
+color: rgba(0, 0, 0, 0.5);
+
+
+
+/* 1 lượt làm đề */
+
+position: absolute;
+width: 94px;
+height: 19px;
+left: 272px;
+top: 620px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 400;
+font-size: 16px;
+line-height: 19px;
+/* identical to box height */
+display: flex;
+align-items: center;
+
+color: rgba(0, 0, 0, 0.5);
+
+
+
+/* 1 lượt chấm đề */
+
+position: absolute;
+width: 108px;
+height: 19px;
+left: 272px;
+top: 664px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 400;
+font-size: 16px;
+line-height: 19px;
+/* identical to box height */
+display: flex;
+align-items: center;
+
+color: rgba(0, 0, 0, 0.5);
+
+
+
+/* 1 lượt chữa đề bằng AI */
+
+position: absolute;
+width: 162px;
+height: 19px;
+left: 272px;
+top: 711px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 400;
+font-size: 16px;
+line-height: 19px;
+/* identical to box height */
+display: flex;
+align-items: center;
+
+color: rgba(0, 0, 0, 0.5);
+
+
+
+/* Cần tư vấn thêm? Liên hệ ngay */
+
+position: absolute;
+width: 223px;
+height: 19px;
+left: 619px;
+top: 1467px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 400;
+font-size: 16px;
+line-height: 19px;
+/* identical to box height */
+display: flex;
+align-items: center;
+text-align: center;
+
+color: rgba(0, 0, 0, 0.5);
+
+
+
+/* Làm đề không giới hạn */
+
+position: absolute;
+width: 367px;
+height: 42px;
+left: 547px;
+top: 298px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 500;
+font-size: 36px;
+line-height: 42px;
+display: flex;
+align-items: center;
+text-align: center;
+
+color: #000000;
+
+
+
+/* Free */
+
+position: absolute;
+width: 40px;
+height: 23px;
+left: 238px;
+top: 516px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 500;
+font-size: 20px;
+line-height: 23px;
+display: flex;
+align-items: center;
+
+color: #000000;
+
+
+
+/* Miễn phí */
+
+position: absolute;
+width: 139px;
+height: 42px;
+left: 238px;
+top: 553px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 500;
+font-size: 36px;
+line-height: 42px;
+display: flex;
+align-items: center;
+
+color: #000000;
+
+
+
+/* Câu hỏi thường gặp */
+
+position: absolute;
+width: 315px;
+height: 42px;
+left: 573px;
+top: 1404px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 500;
+font-size: 36px;
+line-height: 42px;
+display: flex;
+align-items: center;
+text-align: center;
+
+color: #000000;
+
+
+
+/* Tổng hợp các đề mới nhất đến từ các trường */
+
+position: absolute;
+width: 397px;
+height: 23px;
+left: 532px;
+top: 1056px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 500;
+font-size: 20px;
+line-height: 23px;
+display: flex;
+align-items: center;
+text-align: center;
+
+color: rgba(0, 0, 0, 0.5);
+
+
+
+/* Liên hệ */
+
+position: absolute;
+width: 52px;
+height: 19px;
+left: 846px;
+top: 31px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 400;
+font-size: 16px;
+line-height: 19px;
+/* identical to box height */
+display: flex;
+align-items: center;
+text-align: center;
+
+color: rgba(0, 0, 0, 0.5);
+
+
+
+/* Rectangle 915 */
+
+box-sizing: border-box;
+
+position: absolute;
+width: 5.17px;
+height: 5.17px;
+left: 623px;
+top: 36px;
+
+border: 2px solid #D9D9D9;
+transform: rotate(45deg);
+
+
+/* Rectangle 916 */
+
+position: absolute;
+width: 130px;
+height: 50px;
+left: 1254px;
+top: 15px;
+
+background: #FFBA08;
+border-radius: 25px;
+
+
+/* Thi thử */
+
+position: absolute;
+width: 52px;
+height: 19px;
+left: 1293px;
+top: 31px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 700;
+font-size: 16px;
+line-height: 19px;
+/* identical to box height */
+display: flex;
+align-items: center;
+text-align: center;
+
+color: #FFFFFF;
+
+
+
+/* Rectangle 928 */
+
+position: absolute;
+width: 225px;
+height: 66px;
+left: 246px;
+top: 825px;
+
+background: #FFBA08;
+border-radius: 99px;
+
+
+/* Thi thử */
+
+position: absolute;
+width: 64px;
+height: 23px;
+left: 327px;
+top: 847px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 600;
+font-size: 20px;
+line-height: 23px;
+display: flex;
+align-items: center;
+text-align: center;
+
+color: #FFFFFF;
+
+
+
+/* Rectangle 919 */
+
+position: absolute;
+width: 300px;
+height: 470px;
+left: calc(50% - 300px/2);
+top: 466px;
+
+background: #000000;
+box-shadow: 0px 2px 20px rgba(0, 0, 0, 0.05);
+border-radius: 30px;
+
+
+/* Rectangle 927 */
+
+position: absolute;
+width: 300px;
+height: 470px;
+left: calc(50% - 300px/2 + 363px);
+top: 466px;
+
+background: #000000;
+box-shadow: 0px 2px 20px rgba(0, 0, 0, 0.05);
+border-radius: 30px;
+
+
+/* Rectangle 926 */
+
+box-sizing: border-box;
+
+position: absolute;
+width: 300px;
+height: 470px;
+left: calc(50% - 300px/2 - 362px);
+top: 466px;
+
+border: 2px solid rgba(0, 0, 0, 0.05);
+filter: drop-shadow(0px 2px 20px rgba(0, 0, 0, 0.05));
+border-radius: 30px;
+
+
+/* Vector */
+
+position: absolute;
+left: 16.74%;
+right: 82.07%;
+top: 30.1%;
+bottom: 69.13%;
+
+background: #FFC107;
+
+
+/* Vector */
+
+position: absolute;
+left: 16.74%;
+right: 82.07%;
+top: 32.23%;
+bottom: 66.99%;
+
+background: #FFC107;
+
+
+/* Vector */
+
+position: absolute;
+left: 16.74%;
+right: 82.07%;
+top: 34.51%;
+bottom: 64.71%;
+
+background: #FFC107;
+
+
+/* image 11 */
+
+position: absolute;
+width: 118px;
+height: 118px;
+left: 208px;
+top: 1141px;
+
+background: url(image.png);
+border-radius: 8px;
+
+
+/* image 12 */
+
+position: absolute;
+width: 120px;
+height: 120px;
+left: 930px;
+top: 1139px;
+
+background: url(image.png);
+
+
+/* image 13 */
+
+position: absolute;
+width: 120px;
+height: 120px;
+left: 1113px;
+top: 1139px;
+
+background: url(image.png);
+
+
+/* image 14 */
+
+position: absolute;
+width: 118px;
+height: 118px;
+left: 569px;
+top: 1141px;
+
+background: url(image.png);
+
+
+/* image 15 */
+
+position: absolute;
+width: 117px;
+height: 118px;
+left: 750px;
+top: 1141px;
+
+background: url(image.png);
+
+
+/* image 16 */
+
+position: absolute;
+width: 117px;
+height: 118px;
+left: 389px;
+top: 1141px;
+
+background: url(image.png);
+
+
+/* Rectangle 929 */
+
+position: absolute;
+width: 225px;
+height: 66px;
+left: 607px;
+top: 825px;
+
+background: #FFBA08;
+border-radius: 99px;
+
+
+/* Rectangle 930 */
+
+position: absolute;
+width: 225px;
+height: 66px;
+left: 970px;
+top: 825px;
+
+background: #FFBA08;
+border-radius: 99px;
+
+
+/* Nâng Pro */
+
+position: absolute;
+width: 84px;
+height: 23px;
+left: 678px;
+top: 847px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 600;
+font-size: 20px;
+line-height: 23px;
+display: flex;
+align-items: center;
+text-align: center;
+
+color: #FFFFFF;
+
+
+
+/* Nâng Pro */
+
+position: absolute;
+width: 84px;
+height: 23px;
+left: 1041px;
+top: 847px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 600;
+font-size: 20px;
+line-height: 23px;
+display: flex;
+align-items: center;
+text-align: center;
+
+color: #FFFFFF;
+
+
+
+/* Không giới hạn đề */
+
+position: absolute;
+width: 129px;
+height: 19px;
+left: 641px;
+top: 620px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 400;
+font-size: 16px;
+line-height: 19px;
+/* identical to box height */
+display: flex;
+align-items: center;
+
+color: #FFFFFF;
+
+
+
+/* Không giới hạn đề */
+
+position: absolute;
+width: 129px;
+height: 19px;
+left: 1004px;
+top: 620px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 400;
+font-size: 16px;
+line-height: 19px;
+/* identical to box height */
+display: flex;
+align-items: center;
+
+color: #FFFFFF;
+
+
+
+/* Không giới hạn chấm */
+
+position: absolute;
+width: 150px;
+height: 19px;
+left: 641px;
+top: 664px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 400;
+font-size: 16px;
+line-height: 19px;
+/* identical to box height */
+display: flex;
+align-items: center;
+
+color: #FFFFFF;
+
+
+
+/* Không giới hạn chấm */
+
+position: absolute;
+width: 150px;
+height: 19px;
+left: 1004px;
+top: 664px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 400;
+font-size: 16px;
+line-height: 19px;
+/* identical to box height */
+display: flex;
+align-items: center;
+
+color: #FFFFFF;
+
+
+
+/* Không giới hạn AI chữa */
+
+position: absolute;
+width: 165px;
+height: 19px;
+left: 641px;
+top: 711px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 400;
+font-size: 16px;
+line-height: 19px;
+/* identical to box height */
+display: flex;
+align-items: center;
+
+color: #FFFFFF;
+
+
+
+/* Không giới hạn chữa */
+
+position: absolute;
+width: 146px;
+height: 19px;
+left: 1004px;
+top: 711px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 400;
+font-size: 16px;
+line-height: 19px;
+/* identical to box height */
+display: flex;
+align-items: center;
+
+color: #FFFFFF;
+
+
+
+/* Giảng viên Streak chữa */
+
+position: absolute;
+width: 164px;
+height: 19px;
+left: 1004px;
+top: 754px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 400;
+font-size: 16px;
+line-height: 19px;
+/* identical to box height */
+display: flex;
+align-items: center;
+
+color: #FFFFFF;
+
+
+
+/* Pro */
+
+position: absolute;
+width: 31px;
+height: 23px;
+left: 607px;
+top: 516px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 500;
+font-size: 20px;
+line-height: 23px;
+display: flex;
+align-items: center;
+
+color: #FFBA08;
+
+
+
+/* Max */
+
+position: absolute;
+width: 39px;
+height: 23px;
+left: 970px;
+top: 516px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 500;
+font-size: 20px;
+line-height: 23px;
+display: flex;
+align-items: center;
+
+color: #FFBA08;
+
+
+
+/* 699k/tháng */
+
+position: absolute;
+width: 187px;
+height: 42px;
+left: 607px;
+top: 553px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 500;
+font-size: 36px;
+line-height: 42px;
+display: flex;
+align-items: center;
+
+color: #FFFFFF;
+
+
+
+/* 899k/3 tháng */
+
+position: absolute;
+width: 216px;
+height: 42px;
+left: 970px;
+top: 553px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 500;
+font-size: 36px;
+line-height: 42px;
+display: flex;
+align-items: center;
+
+color: #FFFFFF;
+
+
+
+/* Vector */
+
+position: absolute;
+left: 42.36%;
+right: 56.44%;
+top: 30.1%;
+bottom: 69.13%;
+
+background: #FFC107;
+
+
+/* Vector */
+
+position: absolute;
+left: 67.57%;
+right: 31.24%;
+top: 30.1%;
+bottom: 69.13%;
+
+background: #FFC107;
+
+
+/* Vector */
+
+position: absolute;
+left: 42.36%;
+right: 56.44%;
+top: 32.23%;
+bottom: 66.99%;
+
+background: #FFC107;
+
+
+/* Vector */
+
+position: absolute;
+left: 67.57%;
+right: 31.24%;
+top: 32.23%;
+bottom: 66.99%;
+
+background: #FFC107;
+
+
+/* Vector */
+
+position: absolute;
+left: 42.36%;
+right: 56.44%;
+top: 34.51%;
+bottom: 64.71%;
+
+background: #FFC107;
+
+
+/* Vector */
+
+position: absolute;
+left: 67.57%;
+right: 31.24%;
+top: 34.51%;
+bottom: 64.71%;
+
+background: #FFC107;
+
+
+/* Vector */
+
+position: absolute;
+left: 67.57%;
+right: 31.24%;
+top: 36.6%;
+bottom: 62.62%;
+
+background: #FFC107;
+
+
+/* FA Streak có lừa đảo không? */
+
+position: absolute;
+width: 426px;
+height: 23px;
+left: 521px;
+top: 1556px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 500;
+font-size: 20px;
+line-height: 23px;
+display: flex;
+align-items: center;
+
+color: #000000;
+
+
+
+/* Bao giờ tài khoản của tôi được kích hoạt? */
+
+position: absolute;
+width: 369px;
+height: 23px;
+left: 521px;
+top: 1665px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 500;
+font-size: 20px;
+line-height: 23px;
+display: flex;
+align-items: center;
+
+color: #000000;
+
+
+
+/* Nếu bị lỗi thanh toán phải làm sao? */
+
+position: absolute;
+width: 313px;
+height: 23px;
+left: 521px;
+top: 1716px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 500;
+font-size: 20px;
+line-height: 23px;
+display: flex;
+align-items: center;
+
+color: #000000;
+
+
+
+/* AI chữa đề là như thế nào? */
+
+position: absolute;
+width: 239px;
+height: 23px;
+left: 521px;
+top: 1767px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 500;
+font-size: 20px;
+line-height: 23px;
+display: flex;
+align-items: center;
+
+color: #000000;
+
+
+
+/* Giảng viên chữa đề là ra sao? */
+
+position: absolute;
+width: 262px;
+height: 23px;
+left: 521px;
+top: 1818px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 500;
+font-size: 20px;
+line-height: 23px;
+display: flex;
+align-items: center;
+
+color: #000000;
+
+
+
+/* Khi gặp vấn đề tôi cần liên hệ đến ai? */
+
+position: absolute;
+width: 331px;
+height: 23px;
+left: 521px;
+top: 1869px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 500;
+font-size: 20px;
+line-height: 23px;
+display: flex;
+align-items: center;
+
+color: #000000;
+
+
+
+/* Đọc review nhé, lừa cl */
+
+position: absolute;
+width: 251px;
+height: 19px;
+left: 521px;
+top: 1607px;
+
+font-family: 'Sans-serif';
+font-style: normal;
+font-weight: 400;
+font-size: 16px;
+line-height: 19px;
+/* identical to box height */
+display: flex;
+align-items: center;
+
+color: rgba(0, 0, 0, 0.5);
+
+
+
+/* Rectangle 931 */
+
+box-sizing: border-box;
+
+position: absolute;
+width: 5.17px;
+height: 5.17px;
+left: 494px;
+top: 1561px;
+
+border: 2px solid #D9D9D9;
+transform: rotate(45deg);
+
+
+/* Rectangle 932 */
+
+box-sizing: border-box;
+
+position: absolute;
+width: 5.17px;
+height: 5.17px;
+left: 494px;
+top: 1673px;
+
+border: 2px solid #D9D9D9;
+transform: rotate(-45deg);
+
+
+/* Rectangle 933 */
+
+box-sizing: border-box;
+
+position: absolute;
+width: 5.17px;
+height: 5.17px;
+left: 494px;
+top: 1724px;
+
+border: 2px solid #D9D9D9;
+transform: rotate(-45deg);
+
+
+/* Rectangle 934 */
+
+box-sizing: border-box;
+
+position: absolute;
+width: 5.17px;
+height: 5.17px;
+left: 494px;
+top: 1775px;
+
+border: 2px solid #D9D9D9;
+transform: rotate(-45deg);
+
+
+/* Rectangle 935 */
+
+box-sizing: border-box;
+
+position: absolute;
+width: 5.17px;
+height: 5.17px;
+left: 494px;
+top: 1826px;
+
+border: 2px solid #D9D9D9;
+transform: rotate(-45deg);
+
+
+/* Rectangle 936 */
+
+box-sizing: border-box;
+
+position: absolute;
+width: 5.17px;
+height: 5.17px;
+left: 494px;
+top: 1877px;
+
+border: 2px solid #D9D9D9;
+transform: rotate(-45deg);

@@ -1,0 +1,13 @@
+# Sample Audio File Placeholder
+
+This is a placeholder for the sample audio file that should be placed in the public directory.
+
+The file should be named `sample-audio.mp3` and should contain a 15-second sample audio clip for testing purposes.
+
+For now, the audio player will show a mock interface. In a real implementation, you would:
+
+1. Add an actual MP3 file to `/public/sample-audio.mp3`
+2. Ensure the audio file is approximately 15 seconds long
+3. Test the audio playback functionality
+
+The waiting room page is designed to work with or without this audio file - it will gracefully handle the missing file case.
