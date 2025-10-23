@@ -43,8 +43,6 @@ export const useRoomWebSocket = (
 
     // Disconnect from room WebSocket
     const disconnectFromRoom = useCallback(() => {
-        console.log('🔍 Disconnecting from Room WebSocket...');
-        
         // Dừng ping mechanism
         roomPing.stopPing();
         
@@ -68,14 +66,11 @@ export const useRoomWebSocket = (
     const connectToRoom = useCallback((roomCode: string) => {
         if (typeof window === 'undefined') return;
         
-        console.log('🔍 Connecting to room:', roomCode);
-        
         // Disconnect from previous room if any
         disconnectFromRoom();
 
         const token = localStorage.getItem('auth_token');
         if (!token) {
-            console.log('❌ No auth token found');
             setError('Không tìm thấy token xác thực');
             return;
         }
@@ -87,9 +82,6 @@ export const useRoomWebSocket = (
             ? `wss://api.facourse.com/fai/v1/quiz-battle/ws/${formattedRoomCode}?token=${token}`
             : `ws://localhost:7071/fai/v1/quiz-battle/ws/${formattedRoomCode}?token=${token}`;
 
-        console.log('🔍 WebSocket URL:', wsUrl);
-        console.log('🔍 Token length:', token.length);
-        console.log('🔍 Formatted roomCode:', formattedRoomCode);
         setLoading(true);
         setError(null);
         setCurrentRoomCode(roomCode);
@@ -99,8 +91,6 @@ export const useRoomWebSocket = (
             roomWsRef.current = ws;
 
             ws.onopen = () => {
-                console.log('✅ Room WebSocket connected to:', formattedRoomCode);
-                console.log('✅ WebSocket readyState:', ws.readyState);
                 setRoomWsConnected(true);
                 setLoading(false);
                 setError(null);
@@ -113,23 +103,9 @@ export const useRoomWebSocket = (
             ws.onmessage = (event) => {
                 try {
                     const data = JSON.parse(event.data);
-                    console.log('🔍 Room WebSocket message:', data);
                     
                     switch (data.type) {
-                        case 'player_joined':
-                            console.log('🔍 Player joined room:', data);
-                            break;
-                        case 'player_left':
-                            console.log('🔍 Player left room:', data);
-                            break;
-                        case 'quiz_started':
-                            console.log('🔍 Quiz started in room:', data);
-                            break;
-                        case 'quiz_ended':
-                            console.log('🔍 Quiz ended in room:', data);
-                            break;
                         case 'ranking_update':
-                            console.log('🔍 Ranking update received:', data);
                             const rankingData = data as RankingUpdateMessage;
                             setRankings(rankingData.data.rankings);
                             if (onRankingUpdate) {
@@ -137,7 +113,6 @@ export const useRoomWebSocket = (
                             }
                             break;
                         case 'answer_submitted':
-                            console.log('🔍 Answer submitted received:', data);
                             const answerData = data as AnswerSubmittedMessage;
                             if (onAnswerSubmitted) {
                                 onAnswerSubmitted(answerData.data);
@@ -145,16 +120,10 @@ export const useRoomWebSocket = (
                             break;
                         case 'pong':
                             // Server response cho ping message
-                            if (process.env.NODE_ENV === 'development') {
-                                console.log('🔍 Received pong from room WebSocket:', data.timestamp);
-                            }
                             break;
                         case 'error':
-                            console.log('🔍 Room WebSocket error:', data);
                             setError(data.message || 'Lỗi WebSocket room');
                             break;
-                        default:
-                            console.log('🔍 Unknown room WebSocket message type:', data.type);
                     }
                 } catch (error) {
                     console.error('❌ Error parsing room WebSocket message:', error);
@@ -162,11 +131,6 @@ export const useRoomWebSocket = (
             };
 
             ws.onclose = (event) => {
-                console.log('❌ Room WebSocket disconnected');
-                console.log('❌ Close code:', event.code);
-                console.log('❌ Close reason:', event.reason);
-                console.log('❌ Was clean:', event.wasClean);
-                console.log('❌ WebSocket URL:', ws.url);
                 setRoomWsConnected(false);
                 setLoading(false);
                 
@@ -178,13 +142,10 @@ export const useRoomWebSocket = (
                     reconnectAttemptsRef.current += 1;
                     const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 10000); // Exponential backoff, max 10s
                     
-                    console.log(`🔄 Attempting to reconnect Room WebSocket... (attempt ${reconnectAttemptsRef.current}/${maxReconnectAttempts}) in ${delay}ms`);
-                    
                     reconnectTimeoutRef.current = setTimeout(() => {
                         connectToRoom(currentRoomCode);
                     }, delay);
                 } else if (reconnectAttemptsRef.current >= maxReconnectAttempts) {
-                    console.log('❌ Max reconnect attempts reached for room WebSocket');
                     setError('Không thể kết nối đến room sau nhiều lần thử');
                 }
             };
@@ -197,7 +158,6 @@ export const useRoomWebSocket = (
             };
 
         } catch (error) {
-            console.error('❌ Failed to create Room WebSocket:', error);
             setRoomWsConnected(false);
             setLoading(false);
             setError('Không thể tạo kết nối WebSocket room');
@@ -206,11 +166,8 @@ export const useRoomWebSocket = (
 
     // Switch to a new room (disconnect current and connect to new)
     const switchToRoom = useCallback((newRoomCode: string) => {
-        console.log('🔍 Switching from room', currentRoomCode, 'to room', newRoomCode);
-        
         // If already in the same room, do nothing
         if (currentRoomCode === newRoomCode) {
-            console.log('🔍 Already in the same room, skipping switch');
             return;
         }
         
@@ -226,7 +183,6 @@ export const useRoomWebSocket = (
     // Submit answer function
     const submitAnswer = useCallback((questionId: number, isCorrect: boolean, answerTime: number, difficulty: string) => {
         if (!roomWsRef.current || roomWsRef.current.readyState !== WebSocket.OPEN) {
-            console.error('❌ Room WebSocket not connected, cannot submit answer');
             return;
         }
 
@@ -238,7 +194,6 @@ export const useRoomWebSocket = (
             difficulty
         };
 
-        console.log('🔍 Submitting answer:', message);
         roomWsRef.current.send(JSON.stringify(message));
     }, []);
 

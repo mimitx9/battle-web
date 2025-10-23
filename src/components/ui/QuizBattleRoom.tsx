@@ -40,47 +40,27 @@ const QuizBattleRoom: React.FC<QuizBattleRoomProps> = ({
         roomWsRef,
         submitAnswer
     } = useRoomWebSocket((newRankings) => {
-        console.log('🔍 New rankings received in QuizBattleRoom:', newRankings);
-        console.log('🔍 Rankings length:', newRankings.length);
         setRankings(newRankings);
     });
 
     // Connect to room when component mounts
     useEffect(() => {
         if (roomCode) {
-            console.log('🔍 Connecting to room:', roomCode);
             connectToRoom(roomCode);
         }
 
         return () => {
-            console.log('🔍 Disconnecting from room');
             disconnectFromRoom();
         };
     }, [roomCode, connectToRoom, disconnectFromRoom]);
 
     // Update rankings when WebSocket rankings change (fallback)
     useEffect(() => {
-        console.log('🔍 wsRankings changed:', wsRankings);
-        console.log('🔍 wsRankings length:', wsRankings.length);
         // Chỉ cập nhật nếu rankings hiện tại rỗng và wsRankings có dữ liệu
         if (rankings.length === 0 && wsRankings.length > 0) {
-            console.log('🔍 Setting rankings from wsRankings fallback');
             setRankings(wsRankings);
         }
     }, [wsRankings, rankings.length]);
-
-    // Debug WebSocket connection status
-    useEffect(() => {
-        console.log('🔍 WebSocket connection status:', {
-            connected: roomWsConnected,
-            loading,
-            error,
-            rankingsCount: rankings.length,
-            wsRankingsCount: wsRankings.length,
-            rankings: rankings,
-            wsRankings: wsRankings
-        });
-    }, [roomWsConnected, loading, error, rankings.length, wsRankings.length, rankings, wsRankings]);
 
     if (loading) {
         return (
@@ -153,21 +133,13 @@ const QuizBattleRoom: React.FC<QuizBattleRoomProps> = ({
                                 userBag={currentUserBag as any} 
                                 roomWsRef={roomWsRef}
                                 onToolUsed={(toolType) => {
-                                    console.log('🔍 Tool used:', toolType);
                                     // Có thể thêm logic cập nhật UI ở đây nếu cần
                                 }}
                                 onUserBagUpdate={(updatedUserBag) => {
-                                    console.log('🔍 UserBag updated:', updatedUserBag);
                                     setCurrentUserBag(updatedUserBag);
                                 }}
                                 onError={(error) => {
                                     console.error('❌ Help tool error:', error);
-                                    console.error('❌ WebSocket status when error:', {
-                                        connected: roomWsConnected,
-                                        roomWsRef: !!roomWsRef,
-                                        roomWsRefCurrent: !!roomWsRef?.current,
-                                        readyState: roomWsRef?.current?.readyState
-                                    });
                                     // Có thể thêm notification hoặc toast message ở đây
                                 }}
                             />
