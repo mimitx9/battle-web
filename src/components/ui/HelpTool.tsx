@@ -18,6 +18,46 @@ interface HelpToolProps {
 }
 
 const HelpTool: React.FC<HelpToolProps> = ({ className = '', userBag, onToolUsed, roomWsRef, onUserBagUpdate, onError }) => {
+    // Debug WebSocket status khi component mount
+    React.useEffect(() => {
+        console.log('🔍 HelpTool mounted - WebSocket debug:', {
+            roomWsRef: !!roomWsRef,
+            roomWsRefCurrent: !!roomWsRef?.current,
+            readyState: roomWsRef?.current?.readyState,
+            readyStateText: roomWsRef?.current?.readyState === WebSocket.OPEN ? 'OPEN' : 
+                           roomWsRef?.current?.readyState === WebSocket.CONNECTING ? 'CONNECTING' :
+                           roomWsRef?.current?.readyState === WebSocket.CLOSING ? 'CLOSING' :
+                           roomWsRef?.current?.readyState === WebSocket.CLOSED ? 'CLOSED' : 'UNKNOWN',
+            WebSocketOPEN: WebSocket.OPEN
+        });
+    }, [roomWsRef]);
+
+    // Function để gửi help tool message - giống hệt submitAnswer trong useRoomWebSocket
+    const sendHelpToolMessage = React.useCallback((toolType: string) => {
+        console.log('🔍 sendHelpToolMessage called with:', toolType);
+        console.log('🔍 roomWsRef:', roomWsRef);
+        console.log('🔍 roomWsRef?.current:', roomWsRef?.current);
+        console.log('🔍 roomWsRef?.current?.readyState:', roomWsRef?.current?.readyState);
+        console.log('🔍 WebSocket.OPEN:', WebSocket.OPEN);
+        
+        if (!roomWsRef?.current || roomWsRef.current.readyState !== WebSocket.OPEN) {
+            console.error('❌ Room WebSocket not connected, cannot send help tool message');
+            console.error('❌ roomWsRef exists:', !!roomWsRef);
+            console.error('❌ roomWsRef.current exists:', !!roomWsRef?.current);
+            console.error('❌ readyState:', roomWsRef?.current?.readyState);
+            console.error('❌ WebSocket.OPEN:', WebSocket.OPEN);
+            return;
+        }
+
+        const message = {
+            type: 'help_tool',
+            tool: toolType
+        };
+
+        console.log('🔍 Sending help tool message:', message);
+        roomWsRef.current.send(JSON.stringify(message));
+    }, [roomWsRef]);
+
     // Function để xử lý khi user sử dụng help tool
     const handleToolClick = (toolType: string) => {
         console.log('🔍 Help tool clicked:', toolType);
@@ -47,54 +87,21 @@ const HelpTool: React.FC<HelpToolProps> = ({ className = '', userBag, onToolUsed
             return;
         }
         
-        // Kiểm tra WebSocket connection
-        if (!roomWsRef?.current) {
-            const errorMsg = 'Không thể kết nối đến server';
-            console.error('❌ Room WebSocket ref not available');
-            if (onError) {
-                onError(errorMsg);
-            }
-            return;
-        }
+        // Gửi message lên server qua WebSocket - giống hệt submitAnswer
+        sendHelpToolMessage(serverToolType);
         
-        if (roomWsRef.current.readyState !== WebSocket.OPEN) {
-            const errorMsg = 'Kết nối đến server đã bị ngắt';
-            console.error('❌ Room WebSocket not connected');
-            if (onError) {
-                onError(errorMsg);
-            }
-            return;
-        }
-        
-        // Gửi message lên server qua WebSocket
-        try {
-            const message = {
-                type: 'help_tool',
-                tool: serverToolType
+        // Cập nhật userBag count ngay lập tức để UI responsive
+        if (onUserBagUpdate && userBag) {
+            const updatedUserBag = {
+                ...userBag,
+                [serverToolType]: Math.max(0, (userBag[serverToolType as keyof typeof userBag] as number || 0) - 1)
             };
-            
-            console.log('🔍 Sending help tool message:', message);
-            roomWsRef.current.send(JSON.stringify(message));
-            
-            // Cập nhật userBag count ngay lập tức để UI responsive
-            if (onUserBagUpdate && userBag) {
-                const updatedUserBag = {
-                    ...userBag,
-                    [serverToolType]: Math.max(0, (userBag[serverToolType as keyof typeof userBag] as number || 0) - 1)
-                };
-                onUserBagUpdate(updatedUserBag);
-            }
-            
-            // Gọi callback để cập nhật UI
-            if (onToolUsed) {
-                onToolUsed(serverToolType);
-            }
-        } catch (error) {
-            const errorMsg = 'Không thể gửi yêu cầu đến server';
-            console.error('❌ Failed to send help tool message:', error);
-            if (onError) {
-                onError(errorMsg);
-            }
+            onUserBagUpdate(updatedUserBag);
+        }
+        
+        // Gọi callback để cập nhật UI
+        if (onToolUsed) {
+            onToolUsed(serverToolType);
         }
     };
 

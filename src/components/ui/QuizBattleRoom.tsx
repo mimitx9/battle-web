@@ -37,7 +37,8 @@ const QuizBattleRoom: React.FC<QuizBattleRoomProps> = ({
         connectToRoom,
         disconnectFromRoom,
         rankings: wsRankings,
-        roomWsRef
+        roomWsRef,
+        submitAnswer
     } = useRoomWebSocket((newRankings) => {
         console.log('🔍 New rankings received in QuizBattleRoom:', newRankings);
         console.log('🔍 Rankings length:', newRankings.length);
@@ -143,10 +144,11 @@ const QuizBattleRoom: React.FC<QuizBattleRoomProps> = ({
                             <QuizCard 
                                 questions={questions}
                                 onSubmitAnswer={onSubmitAnswer}
+                                submitAnswer={submitAnswer}
                             />
                         </div>
-                        {/* Help Tool bên dưới Quiz Card */}
-                        {user && (
+                        {/* Help Tool bên dưới Quiz Card - chỉ render khi WebSocket đã kết nối */}
+                        {user && roomWsConnected && (
                             <HelpTool 
                                 userBag={currentUserBag as any} 
                                 roomWsRef={roomWsRef}
@@ -160,6 +162,12 @@ const QuizBattleRoom: React.FC<QuizBattleRoomProps> = ({
                                 }}
                                 onError={(error) => {
                                     console.error('❌ Help tool error:', error);
+                                    console.error('❌ WebSocket status when error:', {
+                                        connected: roomWsConnected,
+                                        roomWsRef: !!roomWsRef,
+                                        roomWsRefCurrent: !!roomWsRef?.current,
+                                        readyState: roomWsRef?.current?.readyState
+                                    });
                                     // Có thể thêm notification hoặc toast message ở đây
                                 }}
                             />
