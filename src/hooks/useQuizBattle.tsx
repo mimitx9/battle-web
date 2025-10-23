@@ -35,6 +35,7 @@ interface UseQuizBattleReturn {
     refreshRooms: () => Promise<void>;
     onCooldownComplete: () => void;
     submitAnswer: (questionId: number, isCorrect: boolean, answerTime: number, difficulty: string) => void;
+    sendHelpTool: (toolType: string) => void;
 }
 
 export const useQuizBattle = (): UseQuizBattleReturn => {
@@ -501,6 +502,28 @@ export const useQuizBattle = (): UseQuizBattleReturn => {
         roomWsRef.current.send(JSON.stringify(message));
     }, []);
 
+    // Send help tool function
+    const sendHelpTool = useCallback((toolType: string) => {
+        console.log('🔍 sendHelpTool called with:', toolType);
+        
+        if (!roomWsRef.current || roomWsRef.current.readyState !== WebSocket.OPEN) {
+            console.warn('⚠️ WebSocket not connected, cannot send help tool');
+            return;
+        }
+
+        const message = {
+            type: 'help_tool',
+            tool: toolType
+        };
+
+        try {
+            roomWsRef.current.send(JSON.stringify(message));
+            console.log('📤 Help tool message sent:', message);
+        } catch (error) {
+            console.error('❌ Error sending help tool message:', error);
+        }
+    }, []);
+
     // Initialize quiz battle system
     const initialize = useCallback(async () => {
         console.log('🔍 Initializing quiz battle system...');
@@ -567,5 +590,6 @@ export const useQuizBattle = (): UseQuizBattleReturn => {
         refreshRooms,
         onCooldownComplete,
         submitAnswer,
+        sendHelpTool,
     };
 };

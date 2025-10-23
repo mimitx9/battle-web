@@ -12,31 +12,12 @@ interface HelpToolProps {
         battleBlockBehind?: number;
     };
     onToolUsed?: (toolType: string) => void;
-    roomWsRef?: React.RefObject<WebSocket | null>;
+    sendHelpTool?: (toolType: string) => void;
     onUserBagUpdate?: (updatedUserBag: HelpToolProps['userBag']) => void;
     onError?: (error: string) => void;
 }
 
-const HelpTool: React.FC<HelpToolProps> = ({ className = '', userBag, onToolUsed, roomWsRef, onUserBagUpdate, onError }) => {
-    // Function để gửi help tool message - giống hệt submitAnswer trong useRoomWebSocket
-    const sendHelpToolMessage = React.useCallback((toolType: string) => {
-        // Nếu không có roomWsRef, có nghĩa là đang ở trang chính (không phải room)
-        if (!roomWsRef) {
-            return;
-        }
-        
-        if (!roomWsRef.current || roomWsRef.current.readyState !== WebSocket.OPEN) {
-            console.error('❌ Room WebSocket not connected, cannot send help tool message');
-            return;
-        }
-
-        const message = {
-            type: 'help_tool',
-            tool: toolType
-        };
-
-        roomWsRef.current.send(JSON.stringify(message));
-    }, [roomWsRef]);
+const HelpTool: React.FC<HelpToolProps> = ({ className = '', userBag, onToolUsed, sendHelpTool, onUserBagUpdate, onError }) => {
 
     // Function để xử lý khi user sử dụng help tool
     const handleToolClick = (toolType: string) => {
@@ -50,6 +31,7 @@ const HelpTool: React.FC<HelpToolProps> = ({ className = '', userBag, onToolUsed
         
         const serverToolType = toolMapping[toolType];
         if (!serverToolType) {
+            console.error('❌ Invalid tool type:', toolType);
             return;
         }
         
@@ -57,16 +39,24 @@ const HelpTool: React.FC<HelpToolProps> = ({ className = '', userBag, onToolUsed
         const toolCount = userBag?.[serverToolType as keyof typeof userBag] as number || 0;
         if (toolCount <= 0) {
             const errorMsg = `Bạn không có đủ ${serverToolType} để sử dụng`;
+            console.warn('⚠️', errorMsg);
             if (onError) {
                 onError(errorMsg);
             }
             return;
         }
         
-        // Gửi message lên server qua WebSocket - giống hệt submitAnswer
-        sendHelpToolMessage(serverToolType);
+        // Kiểm tra sendHelpTool function có sẵn không
+        if (!sendHelpTool) {
+            const errorMsg = 'Không thể kết nối đến server. Vui lòng thử lại.';
+            console.error('❌ sendHelpTool function not provided');
+            if (onError) {
+                onError(errorMsg);
+            }
+            return;
+        }
         
-        // Cập nhật userBag count ngay lập tức để UI responsive
+        // Cập nhật userBag count ngay lập tức để UI responsive (trước khi gửi lên server)
         if (onUserBagUpdate && userBag) {
             const updatedUserBag = {
                 ...userBag,
@@ -74,6 +64,16 @@ const HelpTool: React.FC<HelpToolProps> = ({ className = '', userBag, onToolUsed
             };
             onUserBagUpdate(updatedUserBag);
         }
+        
+        // Gửi message lên server qua WebSocket với format chính xác
+        sendHelpTool(serverToolType);
+        
+        // Log để debug
+        console.log('✅ Help tool used:', {
+            toolType: serverToolType,
+            remainingCount: Math.max(0, toolCount - 1),
+            message: { type: 'help_tool', tool: serverToolType }
+        });
         
         // Gọi callback để cập nhật UI
         if (onToolUsed) {
@@ -146,13 +146,13 @@ const HelpTool: React.FC<HelpToolProps> = ({ className = '', userBag, onToolUsed
         return (
             <div key={index} className="relative">
                 <button 
-                    className="w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
+                    className="w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{
                         background: gradient,
                         boxShadow: isOwned ? `0 4px 12px rgba(0, 0, 0, 0.3)` : `0 4px 12px rgba(7, 0, 73, 0.3)`
                     }}
                     disabled={!isOwned}
-                    title={title}
+                    title={isOwned ? `${title} (${quantity} còn lại)` : `${title} - Không có sẵn`}
                     onClick={() => {
                         if (isOwned && type !== 'hide') {
                             handleToolClick(type);

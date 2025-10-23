@@ -19,7 +19,6 @@ export { default as CooldownOverlay } from './CooldownOverlay';
 export { default as QuizQuestion } from './QuizQuestion';
 export { default as QuizGame } from './QuizGame';
 export { default as QuizCard } from './QuizCard';
-export { default as QuizBattleRoom } from './QuizBattleRoom';
 export { default as Leaderboard } from './Leaderboard';
 export { default as HelpTool } from './HelpTool';
 

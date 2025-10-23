@@ -25,14 +25,13 @@ const HomePage: React.FC = () => {
         initialize,
         joinRoom,
         leaveRoom,
-        onCooldownComplete,
-        submitAnswer
+        submitAnswer,
+        sendHelpTool,
+        onCooldownComplete
     } = useQuizBattle();
     
     const hasInitializedRef = useRef(false);
     const [showQuiz, setShowQuiz] = useState(false);
-    const [lastScoreChange, setLastScoreChange] = useState<number | null>(null);
-    const [showScoreAnimation, setShowScoreAnimation] = useState(false);
 
     // Initialize WebSocket khi user đã đăng nhập - chỉ chạy 1 lần
     useEffect(() => {
@@ -76,27 +75,19 @@ const HomePage: React.FC = () => {
 
     // Handler cho việc submit answer trong quiz
     const handleQuizAnswer = async (questionId: number, answerId: number, isCorrect: boolean, answerTime: number) => {
-        console.log('🔍 Answer submitted:', { questionId, answerId, isCorrect, answerTime });
-        // SubmitAnswer sẽ được gọi từ QuizCard component
+        try {
+            // Determine difficulty based on question or use default
+            const difficulty = 'medium'; // Default difficulty
+            submitAnswer(questionId, isCorrect, answerTime, difficulty);
+        } catch (error) {
+            console.error('❌ Failed to submit answer:', error);
+        }
     };
 
     // Handler khi quiz hoàn thành
     const handleQuizComplete = (score: number, totalQuestions: number) => {
         console.log(`🎯 Quiz completed! Score: ${score}/${totalQuestions}`);
         // Có thể thêm logic để lưu điểm số hoặc hiển thị kết quả
-    };
-
-    // Handler cho answer submitted từ WebSocket
-    const handleAnswerSubmitted = (data: any) => {
-        console.log('🔍 Answer submitted response:', data);
-        setLastScoreChange(data.scoreChange);
-        setShowScoreAnimation(true);
-        
-        // Hide animation after 3 seconds
-        setTimeout(() => {
-            setShowScoreAnimation(false);
-            setLastScoreChange(null);
-        }, 3000);
     };
 
     // Nếu user đã đăng nhập, hiển thị giao diện 3 cột như mẫu
@@ -154,11 +145,13 @@ const HomePage: React.FC = () => {
                                             <QuizCard
                                                 questions={quizQuestions}
                                                 onSubmitAnswer={handleQuizAnswer}
-                                                submitAnswer={submitAnswer}
                                             />
                                         </div>
                                         {/* Help Tool bên dưới Quiz Card */}
-                                        <HelpTool userBag={user?.userBag as any} />
+                                        <HelpTool 
+                                            userBag={user?.userBag as any} 
+                                            sendHelpTool={sendHelpTool}
+                                        />
                                     </>
                                 ) : (
                                     <div className="bg-white rounded-2xl shadow-lg p-6 h-full flex items-center justify-center">
@@ -194,17 +187,6 @@ const HomePage: React.FC = () => {
                     isVisible={showCooldown}
                     onComplete={onCooldownComplete}
                 />
-                
-                {/* Score Change Animation */}
-                {showScoreAnimation && lastScoreChange && (
-                    <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none">
-                        <div className={`text-4xl font-bold animate-bounce ${
-                            lastScoreChange > 0 ? 'text-green-500' : 'text-red-500'
-                        }`}>
-                            {lastScoreChange > 0 ? '+' : ''}{lastScoreChange}
-                        </div>
-                    </div>
-                )}
                 
             </div>
         );
