@@ -189,34 +189,17 @@ const QuizCard = ({ questions = [], onSubmitAnswer = () => {}, submitAnswer }: Q
     return (
         <div className="w-full h-full flex items-center justify-center">
             <div className="relative w-full h-full">
-                {/* Stack Layer 3 - Back (Deepest) */}
-                <div className={`absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 rounded-2xl shadow-lg transform transition-all duration-700 ease-out ${
-                    isDrawingCard ? 'translate-y-8 translate-x-4 scale-90 opacity-40' : 'translate-y-6 translate-x-3 scale-92 opacity-50'
-                }`}></div>
-
                 {/* Stack Layer 2 - Middle */}
-                <div className={`absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl shadow-lg transform transition-all duration-700 ease-out ${
-                    isDrawingCard ? 'translate-y-5 translate-x-2 scale-95 opacity-60' : 'translate-y-4 translate-x-2 scale-96 opacity-70'
-                }`}></div>
+                <div className={`absolute inset-0 rounded-3xl transform transition-all duration-700 ease-out translate-y-12  scale-90`} style={{backgroundColor: '#1E1A41'}}></div>
 
                 {/* Stack Layer 1 - Front */}
-                <div className={`absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl shadow-lg transform transition-all duration-700 ease-out ${
-                    isDrawingCard ? 'translate-y-2 translate-x-1 scale-98 opacity-80' : 'translate-y-2 translate-x-1 scale-98 opacity-85'
-                }`}></div>
+                <div className={`absolute inset-0 rounded-3xl transform transition-all duration-700 ease-out translate-y-6  scale-95`} style={{backgroundColor: '#535073'}}></div>
+
 
                 {/* Main Card - Active */}
-                <div className={`relative bg-white rounded-2xl shadow-2xl overflow-hidden transition-all duration-700 ease-out h-full ${
+                <div className={`relative bg-white rounded-3xl shadow-2xl overflow-hidden transition-all duration-700 ease-out h-full ${
                     isDrawingCard ? 'transform translate-y-0 scale-100 opacity-100' : 'transform translate-y-0 scale-100 opacity-100'
                 }`}>
-                    {/* Decorative elements */}
-                    <div className="absolute bottom-0 right-0 w-16 h-16 opacity-10 pointer-events-none">
-                        <svg viewBox="0 0 100 100" className="w-full h-full">
-                            <path
-                                d="M0,100 Q25,50 50,75 T100,25 L100,100 Z"
-                                fill="#ef4444"
-                            />
-                        </svg>
-                    </div>
 
                     <div className="relative z-10 p-4 sm:p-6 flex flex-col h-full">
                         {/* Question Text */}

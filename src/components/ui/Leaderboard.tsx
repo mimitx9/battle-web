@@ -255,7 +255,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
                             {getRankIcon(ranking.rank)}
                             {/* Avatar */}
                             {ranking.avatar && (
-                                <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 border-2 border-gray-600">
+                                <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 border-2 border-gray-600 bg-white">
                                     <img 
                                         src={ranking.avatar} 
                                         alt={ranking.fullName}
@@ -286,7 +286,6 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
                                             src="/logos/battle.svg" 
                                             alt="Battle" 
                                             className="w-3 h-3"
-                                            style={{ filter: 'brightness(0) saturate(100%) invert(100%)' }}
                                         />
                                         <span className="font-bold text-yellow-400">{ranking.score}</span>
                                     </span>
@@ -308,7 +307,6 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
                                     src={ranking.globalRank.url} 
                                     alt={ranking.globalRank.title}
                                     className="w-6 h-6"
-                                    style={{ filter: `brightness(0) saturate(100%) ${ranking.globalRank.color === '#666666' ? 'invert(40%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%)' : ''}` }}
                                 />
                                 <div className="text-center">
                                     <div className="text-xs text-gray-300 font-medium">
