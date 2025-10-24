@@ -15,9 +15,10 @@ interface HelpToolProps {
     sendHelpTool?: (toolType: string) => void;
     onUserBagUpdate?: (updatedUserBag: HelpToolProps['userBag']) => void;
     onError?: (error: string) => void;
+    onShowToolEffect?: (toolType: string) => void; // Callback để hiển thị tool effect
 }
 
-const HelpTool: React.FC<HelpToolProps> = ({ className = '', userBag, onToolUsed, sendHelpTool, onUserBagUpdate, onError }) => {
+const HelpTool: React.FC<HelpToolProps> = ({ className = '', userBag, onToolUsed, sendHelpTool, onUserBagUpdate, onError, onShowToolEffect }) => {
 
     // Function để xử lý khi user sử dụng help tool
     const handleToolClick = (toolType: string) => {
@@ -78,6 +79,11 @@ const HelpTool: React.FC<HelpToolProps> = ({ className = '', userBag, onToolUsed
         // Gọi callback để cập nhật UI
         if (onToolUsed) {
             onToolUsed(serverToolType);
+        }
+        
+        // Hiển thị tool effect
+        if (onShowToolEffect) {
+            onShowToolEffect(serverToolType);
         }
     };
 

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
+import ToolEffect from './ToolEffect';
 
 interface Option {
     answerId: number;
@@ -28,6 +29,8 @@ interface QuizCardProps {
 
 export interface QuizCardRef {
     useHint: () => void;
+    useSnow: () => void;
+    showToolEffect: (toolType: string) => void;
 }
 
 const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSubmitAnswer = () => {}, submitAnswer, onHintUsed, scoreChange }, ref) => {
@@ -42,11 +45,10 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
     const [cardStack, setCardStack] = useState([0, 1, 2]); // Stack of card indices
     const [startTime, setStartTime] = useState<number>(Date.now());
     const [hiddenAnswers, setHiddenAnswers] = useState<number[]>([]); // Danh sách các answerId bị ẩn do hint
+    const [showToolEffect, setShowToolEffect] = useState(false);
+    const [currentToolType, setCurrentToolType] = useState<string>('');
+    const [isProtectedBySnow, setIsProtectedBySnow] = useState(false); // Trạng thái bảo vệ bởi battleSnow
 
-    // Expose hint function to parent component
-    useImperativeHandle(ref, () => ({
-        useHint: handleHintUsed
-    }));
 
     // Mock questions for demo
     const demoQuestions: Question[] = [
@@ -80,6 +82,9 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
         setIsDrawingCard(false);
         setStartTime(Date.now());
         setHiddenAnswers([]); // Reset hidden answers khi questions thay đổi
+        setShowToolEffect(false);
+        setCurrentToolType('');
+        setIsProtectedBySnow(false); // Reset trạng thái bảo vệ khi questions thay đổi
     }, [questionsToUse]);
 
     // Reset state when question changes
@@ -91,6 +96,9 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
         setIsDrawingCard(false);
         setStartTime(Date.now());
         setHiddenAnswers([]); // Reset hidden answers khi chuyển sang câu hỏi tiếp theo
+        setShowToolEffect(false);
+        setCurrentToolType('');
+        setIsProtectedBySnow(false); // Reset trạng thái bảo vệ khi chuyển sang câu hỏi tiếp theo
     }, [currentQuestionIndex]);
 
     const handleAnswerSelect = (answerId: number) => {
@@ -185,6 +193,39 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
         }
     };
 
+    // Function để xử lý khi sử dụng battleSnow
+    const handleSnowUsed = () => {
+        // Kích hoạt trạng thái bảo vệ
+        setIsProtectedBySnow(true);
+        
+        // Gọi callback để thông báo cho parent component
+        if (onHintUsed) {
+            const currentQuestion = questionsToUse[currentQuestionIndex];
+            if (currentQuestion) {
+                onHintUsed(currentQuestion.questionId);
+            }
+        }
+    };
+
+    // Function để hiển thị tool effect
+    const showToolEffectHandler = (toolType: string) => {
+        setCurrentToolType(toolType);
+        setShowToolEffect(true);
+    };
+
+    // Expose showToolEffectHandler để parent component có thể gọi
+    useImperativeHandle(ref, () => ({
+        useHint: handleHintUsed,
+        useSnow: handleSnowUsed,
+        showToolEffect: showToolEffectHandler
+    }));
+
+    // Function để ẩn tool effect
+    const hideToolEffect = () => {
+        setShowToolEffect(false);
+        setCurrentToolType('');
+    };
+
     const getAnswerButtonClass = (answerId: number) => {
         if (!showResult) {
             return selectedAnswer === answerId
@@ -257,6 +298,41 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
                 <div className={`relative bg-white rounded-3xl shadow-2xl overflow-hidden transition-all duration-700 ease-out h-full ${
                     isDrawingCard ? 'transform translate-y-0 scale-100 opacity-100' : 'transform translate-y-0 scale-100 opacity-100'
                 }`}>
+                    
+                    {/* BattleSnow Protection Overlay */}
+                    {isProtectedBySnow && (
+                        <div className="absolute inset-0 z-20 pointer-events-none">
+                            {/* Background protection effect */}
+                            <div 
+                                className="absolute inset-0 opacity-20"
+                                style={{
+                                    background: 'linear-gradient(135deg, rgba(10, 1, 88, 0.3) 0%, rgba(100, 78, 253, 0.3) 50%, rgba(10, 1, 88, 0.3) 100%)',
+                                    animation: 'snowfall 3s ease-in-out infinite'
+                                }}
+                            />
+                            
+                            {/* Snowflakes animation */}
+                            {[...Array(20)].map((_, i) => (
+                                <div
+                                    key={i}
+                                    className="absolute text-white/60 text-xs animate-bounce"
+                                    style={{
+                                        left: `${Math.random() * 100}%`,
+                                        top: `${Math.random() * 100}%`,
+                                        animationDelay: `${Math.random() * 3}s`,
+                                        animationDuration: `${2 + Math.random() * 2}s`
+                                    }}
+                                >
+                                    ❄
+                                </div>
+                            ))}
+                            
+                            {/* Protection indicator */}
+                            <div className="absolute top-4 right-4 bg-blue-500/80 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                                <span>Được bảo vệ</span>
+                            </div>
+                        </div>
+                    )}
 
                     <div className="relative z-10 px-4 py-6 sm:px-8 sm:py-12 flex flex-col h-full overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white">
                         {/* Question Text */}
@@ -370,6 +446,21 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
                     </div>
                 )}
             </div>
+            
+            {/* Tool Effect Overlay */}
+            <ToolEffect 
+                toolType={currentToolType}
+                isVisible={showToolEffect}
+                onAnimationComplete={hideToolEffect}
+            />
+            
+            {/* CSS Animation Styles */}
+            <style jsx>{`
+                @keyframes snowfall {
+                    0%, 100% { opacity: 0.2; transform: translateY(-10px); }
+                    50% { opacity: 0.4; transform: translateY(10px); }
+                }
+            `}</style>
         </div>
     );
 });

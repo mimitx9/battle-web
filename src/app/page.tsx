@@ -129,6 +129,20 @@ const HomePage: React.FC = () => {
             if (quizCardRef.current) {
                 quizCardRef.current.useHint();
             }
+        } else if (toolType === 'battleSnow') {
+            // Trigger snow protection functionality trong QuizCard
+            if (quizCardRef.current) {
+                quizCardRef.current.useSnow();
+            }
+        }
+    };
+
+    // Handler để hiển thị tool effect
+    const handleShowToolEffect = (toolType: string) => {
+        console.log('🔍 Showing tool effect for:', toolType);
+        // Gọi showToolEffect từ QuizCardRef
+        if (quizCardRef.current) {
+            quizCardRef.current.showToolEffect(toolType);
         }
     };
 
@@ -211,6 +225,7 @@ const HomePage: React.FC = () => {
                                             sendHelpTool={sendHelpTool}
                                             onToolUsed={handleHelpToolUsed}
                                             onUserBagUpdate={handleUserBagUpdate}
+                                            onShowToolEffect={handleShowToolEffect}
                                         />
                                     </>
                                 ) : (
