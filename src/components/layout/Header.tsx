@@ -82,14 +82,14 @@ const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Right side - Gift, Shop, Avatar icons and Login/User actions */}
-      <div className="flex items-center justify-end space-x-4 w-1/3">
+      <div className="flex items-center justify-end space-x-8 w-1/3">
         
         {/* Gift icon */}
         <Link href="/gift" className="cursor-pointer hover:opacity-80 transition-opacity">
           <img 
             src="/logos/header/Gift.svg" 
             alt="Gift" 
-            className="w-8 h-8"
+            className="w-7 h-7"
           />
         </Link>
         
@@ -103,18 +103,18 @@ const Header: React.FC<HeaderProps> = ({
         </Link>
         
         {/* Avatar - Show default avatar when not logged in, user avatar when logged in */}
-        <Link href={user ? "/account" : "/login"} className="cursor-pointer hover:opacity-80 transition-opacity">
+        <Link href={user ? "/account" : "/login"} className="cursor-pointer hover:opacity-80 transition-opacity bg-white rounded-full">
           {user && user.avatar ? (
             <img 
               src={user.avatar} 
               alt={user.fullName || user.username}
-              className="w-10 h-10 rounded-full object-cover"
+              className="w-8 h-8 rounded-full object-cover"
             />
           ) : (
             <img 
               src="/logos/header/avatar-default.svg" 
               alt="Avatar" 
-              className="w-10 h-10"
+              className="w-8 h-8"
             />
           )}
         </Link>
