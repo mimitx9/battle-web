@@ -6,8 +6,8 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
   title: {
-    default: "Fa Battle - Ai giỏi hơn sinh viên Y",
-    template: "%s | Fa Battle",
+    default: "FA Battle - Đấu trí học Y",
+    template: "%s | FA Battle",
   },
   description: "Nền tảng luyện thi tiếng Anh VSTEP với đầy đủ các kỹ năng: Listening, Reading, Writing, Speaking. Học miễn phí, luyện thi hiệu quả, tỷ lệ đậu cao 95%.",
   keywords: ["luyện thi VSTEP", "tiếng Anh VSTEP", "thi VSTEP online", "luyện thi tiếng Anh", "VSTEP listening", "VSTEP reading", "VSTEP writing", "VSTEP speaking"],
@@ -27,22 +27,22 @@ export const metadata = {
     type: 'website',
     locale: 'vi_VN',
     url: '/',
-    title: 'Fa Battle - Thi VSTEP khó, có Streak lo',
-    description: 'Nền tảng luyện thi tiếng Anh VSTEP với đầy đủ các kỹ năng: Listening, Reading, Writing, Speaking. Học miễn phí, luyện thi hiệu quả.',
-    siteName: 'LUYỆN THI VSTEP',
+    title: 'FA Battle - Đấu trí học Y',
+    description: 'FA Battle - Đấu trí học Y',
+    siteName: 'FA Battle - Đấu trí học Y',
     images: [
       {
         url: '/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'Fa Battle - Thi VSTEP khó, có Streak lo',
+        alt: 'FA Battle - Đấu trí học Y',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Fa Battle - Thi VSTEP khó, có Streak lo',
-    description: 'Nền tảng luyện thi tiếng Anh VSTEP với đầy đủ các kỹ năng: Listening, Reading, Writing, Speaking.',
+    title: 'FA Battle - Đấu trí học Y',
+    description: 'FA Battle - Đấu trí học Y',
     images: ['/og-image.jpg'],
   },
   robots: {

@@ -109,7 +109,7 @@ const HomeLoginForm: React.FC<HomeLoginFormProps> = ({ onSuccess }) => {
             <div className="flex items-center">
               <Image 
                 src="/logos/logos.svg"
-                alt="Fa Battle Logo"
+                alt="FA Battle Logo"
                 width={200}
                 height={50}
                 className="h-[50px] w-auto object-contain"
