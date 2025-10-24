@@ -341,6 +341,20 @@ export interface GlobalRank {
 
 export interface UserBag {
     key: number;
+    battleHint: number;
+    battleSnow: number;
+    battleBlockTop1: number;
+    battleBlockBehind: number;
+}
+
+export interface UserBagResponse {
+    meta: {
+        code: number;
+        message: string;
+    };
+    data: {
+        userBag: UserBag;
+    };
 }
 
 export interface RankingEntry {

@@ -5,6 +5,7 @@ import {RoomList, LoadingSpinner, CooldownOverlay, QuizCard, Leaderboard, HelpTo
 import {QuizCardRef} from '@/components/ui/QuizCard';
 import {useAuth} from '@/hooks/useAuth';
 import {useQuizBattle} from '../hooks/useQuizBattle';
+import {useUserBag} from '@/hooks/useUserBag';
 import HomeLoginForm from '@/components/ui/HomeLoginForm';
 import LayoutContent from '@/components/layout/LayoutContent';
 import Header from '@/components/layout/Header';
@@ -31,10 +32,11 @@ const HomePage: React.FC = () => {
         onCooldownComplete
     } = useQuizBattle();
     
+    const {userBag, loading: userBagLoading, error: userBagError, fetchUserBag, updateUserBag} = useUserBag();
+    
     const hasInitializedRef = useRef(false);
     const [showQuiz, setShowQuiz] = useState(false);
     const quizCardRef = useRef<QuizCardRef>(null);
-    const [userBag, setUserBag] = useState(user?.userBag || {});
 
     // Initialize WebSocket khi user đã đăng nhập - chỉ chạy 1 lần
     useEffect(() => {
@@ -42,8 +44,10 @@ const HomePage: React.FC = () => {
             console.log('🔍 HomePage: User authenticated, initializing Global WebSocket...');
             hasInitializedRef.current = true;
             initialize();
+            // Gọi API để lấy userBag khi vào home
+            fetchUserBag();
         }
-    }, [isInitialized, user]);
+    }, [isInitialized, user, initialize, fetchUserBag]);
 
     // Show quiz when questions are loaded and cooldown is complete
     useEffect(() => {
@@ -59,15 +63,8 @@ const HomePage: React.FC = () => {
         }
     }, [quizQuestions, showCooldown]);
 
-    // Cập nhật userBag khi user thay đổi
-    useEffect(() => {
-        if (user?.userBag) {
-            setUserBag(user.userBag);
-        }
-    }, [user?.userBag]);
-
     // Handler để xử lý khi click vào room
-    const handleRoomClick = (room: any) => {
+    const handleRoomClick = async (room: any) => {
         console.log('🔍 Room clicked:', room);
         console.log('🔍 Room roomCode:', room.roomCode);
         console.log('🔍 Room categoryCode:', room.categoryCode);
@@ -77,7 +74,13 @@ const HomePage: React.FC = () => {
         
         if (roomCodeToUse) {
             console.log('🔍 Joining room with code:', roomCodeToUse);
-            joinRoom(roomCodeToUse);
+            try {
+                await joinRoom(roomCodeToUse);
+                // Gọi API để cập nhật userBag sau khi join room thành công
+                await fetchUserBag();
+            } catch (error) {
+                console.error('❌ Failed to join room:', error);
+            }
         } else {
             console.error('❌ No room code found:', room);
         }
@@ -113,7 +116,7 @@ const HomePage: React.FC = () => {
 
     // Handler để cập nhật userBag từ HelpTool
     const handleUserBagUpdate = (updatedUserBag: any) => {
-        setUserBag(updatedUserBag);
+        updateUserBag(updatedUserBag);
     };
 
     // Handler khi quiz hoàn thành
@@ -130,6 +133,7 @@ const HomePage: React.FC = () => {
                     currentRoom={currentRoom}
                     wsConnected={wsConnected}
                     roomWsConnected={roomWsConnected}
+                    userBag={userBag}
                 />
                 
                 <div className="flex-1 overflow-hidden">
@@ -183,7 +187,7 @@ const HomePage: React.FC = () => {
                                         </div>
                                         {/* Help Tool bên dưới Quiz Card */}
                                         <HelpTool 
-                                            userBag={userBag as any} 
+                                            userBag={userBag || undefined} 
                                             sendHelpTool={sendHelpTool}
                                             onToolUsed={handleHelpToolUsed}
                                             onUserBagUpdate={handleUserBagUpdate}
