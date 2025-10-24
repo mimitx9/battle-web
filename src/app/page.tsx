@@ -101,7 +101,7 @@ const HomePage: React.FC = () => {
                 />
                 
                 <div className="flex-1 overflow-hidden">
-                    <div className="w-full px-4 py-6 h-full">
+                    <div className="w-full py-6 h-full">
                         {/* Layout 3 cột khớp với header: Rooms - Quiz - Leaderboard */}
                         <div className="flex gap-6 h-full pt-20">
                             {/* Cột trái - Danh sách rooms (w-1/3) */}

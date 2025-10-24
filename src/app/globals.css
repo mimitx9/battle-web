@@ -87,6 +87,24 @@ select:-webkit-autofill {
   background: #a8a8a8;
 }
 
+/* Dark scrollbar for dark backgrounds */
+.scrollbar-dark::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollbar-dark::-webkit-scrollbar-track {
+  background: #04002A;
+}
+
+.scrollbar-dark::-webkit-scrollbar-thumb {
+  background: #04002A;
+  border-radius: 4px;
+}
+
+.scrollbar-dark::-webkit-scrollbar-thumb:hover {
+  background: #04002A;
+}
+
 /* Thin scrollbar styles */
 .scrollbar-thin::-webkit-scrollbar {
   width: 6px;

@@ -216,7 +216,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
     }
 
     return (
-        <div className="rounded-2xl p-6 h-full">
+        <div className="rounded-2xl py-6 h-full ml-auto">
             {/* Empty state */}
             {displayRankings.length === 0 ? (
                 <div className="flex items-center justify-center h-32">
@@ -237,25 +237,23 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
                         return (
                         <div
                             key={ranking.userId}
-                            className={`flex items-center justify-between p-3 rounded-lg transition-colors ${
+                            className={`flex items-center justify-between p-4 rounded-l-2xl transition-all duration-300 ${
                                 ranking.rank === 1
-                                    ? 'bg-gradient-to-r from-[#E05B00] to-[#FFD66D]/60 hover:opacity-90'
+                                    ? `bg-gradient-to-r from-[#E05B00]/50 to-[#FFD66D]/0 hover:opacity-90 ${isCurrentUser ? 'min-w-sm' : 'max-w-xs ml-auto'}`
                                     : ranking.rank === 2
-                                        ? 'bg-gradient-to-r from-[#7622FF] to-[#FF59EE]/60 hover:opacity-90'
+                                        ? `bg-gradient-to-r from-[#FF59EE]/60 to-[#7622FF]/0 hover:opacity-90 ${isCurrentUser ? 'min-w-sm' : 'max-w-xs ml-auto'}`
                                         : ranking.rank === 3
-                                            ? 'bg-gradient-to-r from-[#66E7FF] to-[#66E7FF]/60 hover:opacity-90'
+                                            ? `bg-gradient-to-r from-[#66E7FF]/60 to-[#66E7FF]/0 hover:opacity-90 ${isCurrentUser ? 'min-w-sm' : 'max-w-xs ml-auto'}`
                                             : isCurrentUser
-                                                ? 'bg-white/10 hover:bg-white/15'
-                                                : ranking.isActive 
-                                                    ? 'bg-green-900/20 hover:bg-green-900/30' 
-                                                    : 'bg-gray-700/50 hover:bg-gray-700/70'
+                                                ? 'bg-white/10 hover:bg-white/5 min-w-sm' : 'max-w-xs ml-auto'
+                                                // : ranking.isActive ? 'bg-green-900/20 hover:bg-green-900/30' : 'bg-gray-700/50 hover:bg-gray-700/70'
                             }`}
                     >
-                        <div className="flex items-center space-x-3">
+                        <div className="flex items-center space-x-5">
                             {getRankIcon(ranking.rank)}
                             {/* Avatar */}
                             {ranking.avatar && (
-                                <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 border-2 border-gray-600 bg-white">
+                                <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-white">
                                     <img 
                                         src={ranking.avatar} 
                                         alt={ranking.fullName}
@@ -267,27 +265,27 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
                                 </div>
                             )}
                             <div>
-                                <div className="font-semibold text-sm text-white flex items-center">
+                                <div className="font-medium text-xs mb-1.5 text-white flex items-center">
                                     {ranking.fullName}
-                                    {isCurrentUser && (
+                                    {/* {isCurrentUser && (
                                         <span className="ml-2 text-xs bg-blue-500 text-white px-2 py-1 rounded-full">
                                             Bạn
                                         </span>
-                                    )}
+                                    )} */}
                                 </div>
                                 <div className="text-xs text-gray-300 flex items-center space-x-2">
-                                    {showStreak && (
+                                    {/* {showStreak && (
                                         <span className="flex items-center">
                                             🔥 {ranking.streakCount}
                                         </span>
-                                    )}
-                                    <span className="flex items-center space-x-1">
+                                    )} */}
+                                    <span className="flex items-start space-x-1">
                                         <img 
                                             src="/logos/battle.svg" 
                                             alt="Battle" 
-                                            className="w-3 h-3"
+                                            className="w-5 h-5"
                                         />
-                                        <span className="font-bold text-yellow-400">{ranking.score}</span>
+                                        <span className="font-medium text-xs text-white">{ranking.score}</span>
                                     </span>
                                     {showLastAnswer && (
                                         <span>
@@ -298,21 +296,20 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
                                         </span>
                                     )}
                                 </div>
+                                
                             </div>
                         </div>
-                        <div className="flex items-center space-x-3">
+                        <div className="flex items-center space-x-5 ml-10">
                             {/* Global Rank Info */}
-                            <div className="flex flex-col items-center space-y-1">
+                            <div className="flex flex-col items-center space-y-0.5">
                                 <img 
                                     src={ranking.globalRank.url} 
                                     alt={ranking.globalRank.title}
                                     className="w-6 h-6"
                                 />
-                                <div className="text-center">
-                                    <div className="text-xs text-gray-300 font-medium">
+                                <div className="text-[10px] text-center" style={{ color: ranking.globalRank.color }}>
                                         {ranking.globalRank.title}
                                     </div>
-                                </div>
                             </div>
                         </div>
                     </div>
