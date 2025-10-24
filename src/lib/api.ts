@@ -15,7 +15,8 @@ import {
     AttemptHistoryResponse,
     QuizRoom,
     QuestionsByCategoryRequest,
-    QuestionsByCategoryResponse
+    QuestionsByCategoryResponse,
+    UserBagResponse
 } from '../types';
 import { handle401Error } from './authUtils';
 
@@ -243,8 +244,22 @@ export const authApiService = {
 
 // Quiz Battle API
 export const quizBattleApiService = {
-
-
+    getUserBag: async (): Promise<UserBagResponse> => {
+        try {
+            console.log('🔍 API: Calling getUserBag...');
+            const response = await quizBattleApiInstance.get<UserBagResponse>('/user-bag');
+            
+            console.log('🔍 API: getUserBag response:', response);
+            console.log('🔍 API: getUserBag data:', response.data);
+            
+            return response.data;
+        } catch (error: any) {
+            console.error('❌ API: getUserBag failed:', error);
+            console.error('❌ API: Error response:', error.response?.data);
+            console.error('❌ API: Error status:', error.response?.status);
+            throw error;
+        }
+    },
 
     getQuestionsByCategory: async (requestData: QuestionsByCategoryRequest): Promise<QuestionsByCategoryResponse> => {
         try {

@@ -12,12 +12,20 @@ interface HeaderProps {
   currentRoom?: QuizRoom | null;
   wsConnected?: boolean;
   roomWsConnected?: boolean;
+  userBag?: {
+    key?: number;
+    battleHint?: number;
+    battleSnow?: number;
+    battleBlockTop1?: number;
+    battleBlockBehind?: number;
+  } | null;
 }
 
 const Header: React.FC<HeaderProps> = ({ 
   currentRoom, 
   wsConnected = false, 
-  roomWsConnected = false 
+  roomWsConnected = false,
+  userBag
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { user } = useAuth();
@@ -63,7 +71,7 @@ const Header: React.FC<HeaderProps> = ({
             className="w-6 h-6"
           />
           <span className="text-yellow-400 font-semibold text-lg">
-            {user?.userBag?.key || 0}
+            {userBag?.key || 0}
           </span>
         </div>
       </div>

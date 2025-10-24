@@ -51,7 +51,11 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
                 }
             },
             userBag: {
-                key: 389
+                key: 389,
+                battleHint: 10,
+                battleSnow: 5,
+                battleBlockTop1: 3,
+                battleBlockBehind: 2
             },
             rank: 1, 
             isActive: true, 
@@ -87,7 +91,11 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
                 }
             },
             userBag: {
-                key: 901
+                key: 901,
+                battleHint: 15,
+                battleSnow: 8,
+                battleBlockTop1: 5,
+                battleBlockBehind: 3
             },
             rank: 2, 
             isActive: true, 
@@ -123,7 +131,11 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
                 }
             },
             userBag: {
-                key: 389
+                key: 389,
+                battleHint: 10,
+                battleSnow: 5,
+                battleBlockTop1: 3,
+                battleBlockBehind: 2
             },
             rank: 3, 
             isActive: true, 
