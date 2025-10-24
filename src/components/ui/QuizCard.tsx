@@ -23,13 +23,14 @@ interface QuizCardProps {
     onSubmitAnswer?: (questionId: number, answerId: number, isCorrect: boolean, answerTime: number) => void;
     submitAnswer?: (questionId: number, isCorrect: boolean, answerTime: number, difficulty: string) => void;
     onHintUsed?: (questionId: number) => void; // Callback khi sử dụng hint
+    scoreChange?: number; // Điểm số thay đổi từ server response
 }
 
 export interface QuizCardRef {
     useHint: () => void;
 }
 
-const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSubmitAnswer = () => {}, submitAnswer, onHintUsed }, ref) => {
+const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSubmitAnswer = () => {}, submitAnswer, onHintUsed, scoreChange }, ref) => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [answers, setAnswers] = useState<any[]>([]);
     const [score, setScore] = useState(0);
@@ -364,18 +365,8 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
                                      backgroundClip: 'text',
                                      animation: showResult ? 'popup 0.6s ease-out' : 'none'
                                  }}>
-                                {isCorrect ? '+200' : '0'}
+{isCorrect ? `+${scoreChange || 200}` : '0'}
                             </div>
-                        {/* <div className={`text-center`}>
-                            <div className="text-sm font-semibold opacity-90">
-                                {isCorrect ? 'Chính xác!' : 'Sai rồi!'}
-                            </div>
-                            {currentQuestion.detailAnswer && (
-                                <div className="text-xs mt-2 opacity-80 leading-relaxed max-w-xs">
-                                    {currentQuestion.detailAnswer}
-                                </div>
-                            )}
-                        </div> */}
                     </div>
                 )}
             </div>

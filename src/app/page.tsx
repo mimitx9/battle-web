@@ -30,12 +30,17 @@ const HomePage: React.FC = () => {
         submitAnswer,
         sendHelpTool,
         onCooldownComplete
-    } = useQuizBattle();
+    } = useQuizBattle((scoreChange) => {
+        setCurrentScoreChange(scoreChange);
+        // Reset scoreChange sau 3 giây để không hiển thị điểm cũ
+        setTimeout(() => setCurrentScoreChange(undefined), 3000);
+    });
     
     const {userBag, loading: userBagLoading, error: userBagError, fetchUserBag, updateUserBag} = useUserBag();
     
     const hasInitializedRef = useRef(false);
     const [showQuiz, setShowQuiz] = useState(false);
+    const [currentScoreChange, setCurrentScoreChange] = useState<number | undefined>(undefined);
     const quizCardRef = useRef<QuizCardRef>(null);
 
     // Initialize WebSocket khi user đã đăng nhập - chỉ chạy 1 lần
@@ -183,6 +188,7 @@ const HomePage: React.FC = () => {
                                                 questions={quizQuestions}
                                                 onSubmitAnswer={handleQuizAnswer}
                                                 onHintUsed={handleHintUsed}
+                                                scoreChange={currentScoreChange}
                                             />
                                         </div>
                                         {/* Help Tool bên dưới Quiz Card */}

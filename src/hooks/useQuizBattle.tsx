@@ -36,9 +36,10 @@ interface UseQuizBattleReturn {
     onCooldownComplete: () => void;
     submitAnswer: (questionId: number, isCorrect: boolean, answerTime: number, difficulty: string) => void;
     sendHelpTool: (toolType: string) => void;
+    onScoreChange?: (scoreChange: number) => void; // Callback để nhận scoreChange
 }
 
-export const useQuizBattle = (): UseQuizBattleReturn => {
+export const useQuizBattle = (onScoreChange?: (scoreChange: number) => void): UseQuizBattleReturn => {
     // State management
     const [rooms, setRooms] = useState<QuizRoom[]>([]);
     const [currentRoom, setCurrentRoom] = useState<QuizRoom | null>(null);
@@ -73,7 +74,12 @@ export const useQuizBattle = (): UseQuizBattleReturn => {
     const handleAnswerSubmitted = useCallback((data: AnswerSubmittedMessage['data']) => {
         console.log('🔍 Answer submitted response received:', data);
         addNotification('success', `+${data.scoreChange} điểm!`);
-    }, [addNotification]);
+        
+        // Gọi callback để truyền scoreChange lên parent component
+        if (onScoreChange) {
+            onScoreChange(data.scoreChange);
+        }
+    }, [addNotification, onScoreChange]);
 
     // WebSocket refs
     const globalWsRef = useRef<WebSocket | null>(null);
