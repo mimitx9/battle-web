@@ -219,16 +219,8 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
         <div className="rounded-2xl py-6 h-full ml-auto">
             {/* Empty state */}
             {displayRankings.length === 0 ? (
-                <div className="flex items-center justify-center h-32">
-                    <div className="text-center">
-                        <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-3">
-                            <svg className="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                            </svg>
-                        </div>
-                        <p className="text-sm text-gray-300">Chưa có người chơi nào</p>
-                        <p className="text-xs text-gray-400 mt-1">Bảng xếp hạng sẽ hiển thị khi có người tham gia</p>
-                    </div>
+                <div className="flex items-center justify-center px-12 py-2">
+                    <p className="text-md text-white/20">Bảng xếp hạng</p>
                 </div>
             ) : (
                 <div className="space-y-3">
@@ -239,7 +231,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
                             key={ranking.userId}
                             className={`flex items-center justify-between p-4 rounded-l-2xl transition-all duration-300 ${
                                 ranking.rank === 1
-                                    ? `bg-gradient-to-r from-[#E05B00]/50 to-[#FFD66D]/0 hover:opacity-90 ${isCurrentUser ? 'min-w-sm' : 'max-w-xs ml-auto'}`
+                                    ? `bg-gradient-to-r from-[#ffc107]/40 to-[#FFD66D]/0 hover:opacity-90 ${isCurrentUser ? 'min-w-sm' : 'max-w-xs ml-auto'}`
                                     : ranking.rank === 2
                                         ? `bg-gradient-to-r from-[#FF59EE]/60 to-[#7622FF]/0 hover:opacity-90 ${isCurrentUser ? 'min-w-sm' : 'max-w-xs ml-auto'}`
                                         : ranking.rank === 3

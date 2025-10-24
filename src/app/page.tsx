@@ -154,15 +154,10 @@ const HomePage: React.FC = () => {
                                         />
                                     </>
                                 ) : (
-                                    <div className="bg-white rounded-2xl shadow-lg p-6 h-full flex items-center justify-center">
-                                        <div className="text-center text-gray-500">
-                                            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                                <svg className="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
-                                                </svg>
-                                            </div>
-                                            <h3 className="text-lg font-semibold mb-2">Chọn room để bắt đầu</h3>
-                                            <p className="text-sm">Click vào một room ở bên trái để bắt đầu quiz</p>
+                                    <div className="bg-white/10 rounded-3xl h-full flex items-center justify-center  mx-12">
+                                        <div className="text-center text-white">
+                                            <h3 className="text-lg font-semibold mb-4">Chọn room</h3>
+                                            <p className="text-sm">Click vào room ở bên trái để battle</p>
                                         </div>
                                     </div>
                                 )}

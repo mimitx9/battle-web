@@ -11,6 +11,8 @@ interface RoomListProps {
 
 const RoomList: React.FC<RoomListProps> = ({ rooms, onRoomClick }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [isHoveringContent, setIsHoveringContent] = useState(false);
 
   // Lọc rooms theo search term
   const filteredRooms = rooms.filter(room =>
@@ -18,16 +20,30 @@ const RoomList: React.FC<RoomListProps> = ({ rooms, onRoomClick }) => {
   );
 
   return (
-    <div className="h-full mr-auto flex flex-col max-w-sm">
+    <div className="h-full mr-auto flex flex-col max-w-sm relative">
+      {/* Gradient Overlay */}
+      <div 
+        className={`absolute inset-0 z-40 transition-opacity duration-300 pointer-events-none ${
+          (isSearchFocused || isHoveringContent) ? 'opacity-0' : 'opacity-100'
+        }`}
+        style={{
+          background: 'linear-gradient(to top, rgb(4, 0, 42),  rgba(4, 0, 42, 0.98), rgba(4, 0, 42, 0))'
+        }}
+      />
+      
       {/* Header */}
-      <div className="flex items-center justify-between flex-shrink-0">
+      <div className="flex items-center justify-between flex-shrink-0 relative z-30">
         <div className="relative w-full">
           <input
             type="text"
             placeholder="Tìm kiếm"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="bg-transparent text-white placeholder-white/40 p-4 text-md focus:outline-none border-0 border-b-2 border-white/10 focus:border-white/10 w-full"
+            onFocus={() => setIsSearchFocused(true)}
+            onBlur={() => setIsSearchFocused(false)}
+            onMouseEnter={() => setIsSearchFocused(true)}
+            onMouseLeave={() => setIsSearchFocused(false)}
+            className="bg-transparent text-white placeholder-white/40 px-6 py-4 text-md focus:outline-none border-0 border-b-2 border-white/10 focus:border-white/10 w-full"
           />
           <svg
             className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5"
@@ -47,7 +63,11 @@ const RoomList: React.FC<RoomListProps> = ({ rooms, onRoomClick }) => {
       </div>
 
       {/* Room List */}
-      <div className="flex-1 overflow-y-auto space-y-4 py-6 min-h-0 scrollbar-dark">
+      <div 
+        className="flex-1 overflow-y-auto space-y-4 py-6 min-h-0 scrollbar-dark relative z-30"
+        onMouseEnter={() => setIsHoveringContent(true)}
+        onMouseLeave={() => setIsHoveringContent(false)}
+      >
         {filteredRooms.length > 0 ? (
           filteredRooms.map((room) => (
             <RoomCard
