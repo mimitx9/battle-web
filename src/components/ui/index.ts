@@ -15,6 +15,7 @@ export { default as FullScreenLoading } from './FullScreenLoading';
 export { default as NotificationSystem } from './NotificationSystem';
 export { default as RoomCard } from './RoomCard';
 export { default as RoomList } from './RoomList';
+export { default as RoomTransitionLoader } from './RoomTransitionLoader';
 export { default as CooldownOverlay } from './CooldownOverlay';
 export { default as QuizQuestion } from './QuizQuestion';
 export { default as QuizGame } from './QuizGame';

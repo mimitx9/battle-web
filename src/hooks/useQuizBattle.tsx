@@ -24,16 +24,19 @@ interface UseQuizBattleReturn {
     wsConnected: boolean;
     roomWsConnected: boolean;
     showCooldown: boolean;
+    showRoomTransition: boolean;
     quizQuestions: any[] | null;
     rankings: RankingEntry[];
     
     // Actions
     initialize: () => Promise<void>;
     joinRoom: (roomCode: string) => Promise<void>;
+    autoJoinRoom: (closeCategoryCode: string) => Promise<void>;
     leaveRoom: () => Promise<void>;
     removeNotification: (id: string) => void;
     refreshRooms: () => Promise<void>;
     onCooldownComplete: () => void;
+    onRoomTransitionComplete: () => void;
     submitAnswer: (questionId: number, isCorrect: boolean, answerTime: number, difficulty: string) => void;
     sendHelpTool: (toolType: string) => void;
     onScoreChange?: (scoreChange: number) => void; // Callback để nhận scoreChange
@@ -51,6 +54,7 @@ export const useQuizBattle = (onScoreChange?: (scoreChange: number) => void): Us
     const [wsConnected, setWsConnected] = useState(false);
     const [roomWsConnected, setRoomWsConnected] = useState(false);
     const [showCooldown, setShowCooldown] = useState(false);
+    const [showRoomTransition, setShowRoomTransition] = useState(false);
     const [quizQuestions, setQuizQuestions] = useState<any[] | null>(null);
     const [rankings, setRankings] = useState<RankingEntry[]>([]);
 
@@ -370,9 +374,10 @@ export const useQuizBattle = (onScoreChange?: (scoreChange: number) => void): Us
             setJoinError(null);
             console.log('🔍 Joining room:', roomCode);
             
-            // If already in a room, disconnect from current room first
+            // Show room transition loader nếu đang chuyển từ room khác
             if (currentRoom && currentRoom.roomCode !== roomCode) {
-                console.log('🔍 Already in room', currentRoom.roomCode, ', disconnecting first');
+                console.log('🔍 Already in room', currentRoom.roomCode, ', showing transition loader');
+                setShowRoomTransition(true);
                 
                 // Disconnect room WebSocket properly
                 if (roomWsRef.current) {
@@ -454,10 +459,37 @@ export const useQuizBattle = (onScoreChange?: (scoreChange: number) => void): Us
         }
     }, [addNotification, currentRoom]);
 
+    // Auto join room based on closeCategoryCode
+    const autoJoinRoom = useCallback(async (closeCategoryCode: string) => {
+        try {
+            console.log('🔍 Auto joining room with closeCategoryCode:', closeCategoryCode);
+            
+            // Tìm room có categoryCode khớp với closeCategoryCode
+            const targetRoom = roomsRef.current.find(room => room.categoryCode === closeCategoryCode);
+            
+            if (targetRoom) {
+                console.log('🔍 Found matching room:', targetRoom);
+                await joinRoom(targetRoom.roomCode);
+            } else {
+                console.log('🔍 No room found with categoryCode:', closeCategoryCode);
+                addNotification('info', `Không tìm thấy room với mã ${closeCategoryCode}`);
+            }
+        } catch (error: any) {
+            console.error('❌ Failed to auto join room:', error);
+            addNotification('error', 'Không thể tự động tham gia room');
+        }
+    }, [addNotification, joinRoom]);
+
     // Handle cooldown completion - chỉ ẩn overlay
     const onCooldownComplete = useCallback(() => {
         console.log('🔍 Cooldown completed');
         setShowCooldown(false);
+    }, []);
+
+    // Handle room transition completion
+    const onRoomTransitionComplete = useCallback(() => {
+        console.log('🔍 Room transition completed');
+        setShowRoomTransition(false);
     }, []);
 
     // Leave room - chỉ disconnect room WebSocket, không gửi message
@@ -585,16 +617,19 @@ export const useQuizBattle = (onScoreChange?: (scoreChange: number) => void): Us
         wsConnected,
         roomWsConnected,
         showCooldown,
+        showRoomTransition,
         quizQuestions,
         rankings,
         
         // Actions
         initialize,
         joinRoom,
+        autoJoinRoom,
         leaveRoom,
         removeNotification,
         refreshRooms,
         onCooldownComplete,
+        onRoomTransitionComplete,
         submitAnswer,
         sendHelpTool,
     };

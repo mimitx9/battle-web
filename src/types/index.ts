@@ -11,6 +11,7 @@ export interface User {
     username: string;
     fullName: string;
     avatar?: string;
+    closeCategoryCode?: string;
     university?: string;
     subscriptionType?: 'free' | 'premium';
     countAttempt?: number; // Số lần đã attempt quiz từ API

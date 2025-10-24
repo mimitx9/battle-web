@@ -6,17 +6,33 @@ import RoomCard from './RoomCard';
 
 interface RoomListProps {
   rooms: QuizRoom[];
+  currentRoom?: QuizRoom | null;
   onRoomClick?: (room: QuizRoom) => void;
 }
 
-const RoomList: React.FC<RoomListProps> = ({ rooms, onRoomClick }) => {
+const RoomList: React.FC<RoomListProps> = ({ rooms, currentRoom, onRoomClick }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isHoveringContent, setIsHoveringContent] = useState(false);
 
-  // Lọc rooms theo search term
-  const filteredRooms = rooms.filter(room =>
-    room.categoryTitle.toLowerCase().includes(searchTerm.toLowerCase())
+  // Sắp xếp rooms: room đang join lên đầu, các room khác theo thứ tự ban đầu
+  const sortedRooms = React.useMemo(() => {
+    if (!currentRoom) return rooms;
+    
+    const currentRoomIndex = rooms.findIndex(room => room.roomCode === currentRoom.roomCode);
+    if (currentRoomIndex === -1) return rooms;
+    
+    const currentRoomItem = rooms[currentRoomIndex];
+    const otherRooms = rooms.filter((_, index) => index !== currentRoomIndex);
+    
+    return [currentRoomItem, ...otherRooms];
+  }, [rooms, currentRoom]);
+
+  // Lọc rooms theo search term (tìm theo title hoặc code)
+  const filteredRooms = sortedRooms.filter(room =>
+    room.categoryTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    room.categoryCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    room.roomCode.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -36,7 +52,7 @@ const RoomList: React.FC<RoomListProps> = ({ rooms, onRoomClick }) => {
         <div className="relative w-full">
           <input
             type="text"
-            placeholder="Tìm kiếm"
+            placeholder="Tìm kiếm theo tên hoặc mã room"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onFocus={() => setIsSearchFocused(true)}
@@ -73,7 +89,7 @@ const RoomList: React.FC<RoomListProps> = ({ rooms, onRoomClick }) => {
             <RoomCard
               key={room.roomCode || room.categoryCode}
               room={room}
-              isSelected={false}
+              isSelected={currentRoom?.roomCode === room.roomCode}
               onClick={() => onRoomClick?.(room)}
             />
           ))

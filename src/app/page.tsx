@@ -1,7 +1,7 @@
 'use client';
 
 import React, {useEffect, useRef, useState} from 'react';
-import {RoomList, LoadingSpinner, CooldownOverlay, QuizCard, Leaderboard, HelpTool} from '@/components/ui';
+import {RoomList, LoadingSpinner, CooldownOverlay, QuizCard, Leaderboard, HelpTool, RoomTransitionLoader} from '@/components/ui';
 import {QuizCardRef} from '@/components/ui/QuizCard';
 import {useAuth} from '@/hooks/useAuth';
 import {useQuizBattle} from '../hooks/useQuizBattle';
@@ -22,14 +22,17 @@ const HomePage: React.FC = () => {
         error,
         joinError,
         showCooldown,
+        showRoomTransition,
         quizQuestions,
         rankings,
         initialize,
         joinRoom,
+        autoJoinRoom,
         leaveRoom,
         submitAnswer,
         sendHelpTool,
-        onCooldownComplete
+        onCooldownComplete,
+        onRoomTransitionComplete
     } = useQuizBattle((scoreChange) => {
         setCurrentScoreChange(scoreChange);
         // Reset scoreChange sau 3 giây để không hiển thị điểm cũ
@@ -39,6 +42,7 @@ const HomePage: React.FC = () => {
     const {userBag, loading: userBagLoading, error: userBagError, fetchUserBag, updateUserBag} = useUserBag();
     
     const hasInitializedRef = useRef(false);
+    const hasAutoJoinedRef = useRef(false);
     const [showQuiz, setShowQuiz] = useState(false);
     const [currentScoreChange, setCurrentScoreChange] = useState<number | undefined>(undefined);
     const quizCardRef = useRef<QuizCardRef>(null);
@@ -53,6 +57,15 @@ const HomePage: React.FC = () => {
             fetchUserBag();
         }
     }, [isInitialized, user, initialize, fetchUserBag]);
+
+    // Auto join room khi có closeCategoryCode và rooms đã được load
+    useEffect(() => {
+        if (isInitialized && user && user.closeCategoryCode && rooms.length > 0 && !hasAutoJoinedRef.current && !currentRoom) {
+            console.log('🔍 HomePage: Auto joining room with closeCategoryCode:', user.closeCategoryCode);
+            hasAutoJoinedRef.current = true;
+            autoJoinRoom(user.closeCategoryCode);
+        }
+    }, [isInitialized, user, rooms, currentRoom, autoJoinRoom]);
 
     // Show quiz when questions are loaded and cooldown is complete
     useEffect(() => {
@@ -170,6 +183,7 @@ const HomePage: React.FC = () => {
                                             <div className="flex-1 overflow-y-auto min-h-0">
                                                 <RoomList
                                                     rooms={rooms}
+                                                    currentRoom={currentRoom}
                                                     onRoomClick={handleRoomClick}
                                                 />
                                             </div>
@@ -227,6 +241,13 @@ const HomePage: React.FC = () => {
                 <CooldownOverlay 
                     isVisible={showCooldown}
                     onComplete={onCooldownComplete}
+                />
+                
+                {/* Room Transition Loader */}
+                <RoomTransitionLoader 
+                    isVisible={showRoomTransition}
+                    onComplete={onRoomTransitionComplete}
+                    duration={3000}
                 />
                 
             </div>
