@@ -340,25 +340,44 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
                             })}
                         </div>
 
-                        {/* Result Message */}
-                        {showResult && (
-                            <div className={`text-center py-3 px-3 rounded-2xl transition-all duration-500 ease-out delay-300 flex-shrink-0 ${
-                                isCorrect
-                                    ? 'bg-green-100 text-green-800 border-l-4 border-green-500'
-                                    : 'bg-red-100 text-red-800 border-l-4 border-red-500'
-                            } ${isDrawingCard ? 'opacity-0 transform translate-y-4' : 'opacity-100 transform translate-y-0'}`}>
-                                <p className="font-bold text-xs sm:text-sm">
-                                    {isCorrect ? '✓ Chính xác!' : '✗ Sai rồi!'}
-                                </p>
-                                {currentQuestion.detailAnswer && (
-                                    <p className="text-xs mt-1 opacity-90 leading-relaxed">
-                                        {currentQuestion.detailAnswer}
-                                    </p>
-                                )}
-                            </div>
-                        )}
                     </div>
                 </div>
+
+                {/* Result Message - External Position */}
+                {showResult && (
+                    <div className={`absolute -right-32 top-1/3 transform -translate-y-1/2 z-20 transition-all duration-300 ease-out delay-300 ${
+                        isDrawingCard ? 'opacity-0 transform translate-y-4' : 'opacity-100 transform translate-y-0'
+                    }`}>
+                        <div className={`text-6xl text-center transition-all duration-500 ease-out ${
+                            showResult ? 'animate-bounce scale-110' : 'scale-0 opacity-0'
+                        }`}
+                                 style={{
+                                     textShadow: `0 2px 2px ${isCorrect ? 'rgba(255, 238, 0, 0.5)' : 'rgba(255, 100, 100, 0.25)'}`,
+                                     filter: `drop-shadow(0 5px 0 ${isCorrect ? '#E05B00' : 'rgb(171, 34, 85)'}) drop-shadow(0 6px 8px rgba(0,0,0,0.5))`,
+                                     fontFamily: 'Arial Black, sans-serif',
+                                     fontWeight: '900',
+                                     letterSpacing: '1px',
+                                     WebkitTextStroke: `0.5px ${isCorrect ? '#FFE46D' : 'rgba(255, 255, 255, 0.4)'}`,
+                                     WebkitTextFillColor: 'transparent',
+                                     background: `linear-gradient(to bottom, ${isCorrect ? '#FFD410' : '#F71873' } 0%, ${isCorrect ? '#E05B00' : '#FF9B4C'} 100%)`,
+                                     WebkitBackgroundClip: 'text',
+                                     backgroundClip: 'text',
+                                     animation: showResult ? 'popup 0.6s ease-out' : 'none'
+                                 }}>
+                                {isCorrect ? '+200' : '0'}
+                            </div>
+                        {/* <div className={`text-center`}>
+                            <div className="text-sm font-semibold opacity-90">
+                                {isCorrect ? 'Chính xác!' : 'Sai rồi!'}
+                            </div>
+                            {currentQuestion.detailAnswer && (
+                                <div className="text-xs mt-2 opacity-80 leading-relaxed max-w-xs">
+                                    {currentQuestion.detailAnswer}
+                                </div>
+                            )}
+                        </div> */}
+                    </div>
+                )}
             </div>
         </div>
     );

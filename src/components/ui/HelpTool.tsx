@@ -94,10 +94,10 @@ const HelpTool: React.FC<HelpToolProps> = ({ className = '', userBag, onToolUsed
         let title = 'Help Tool không khả dụng';
         
         if (type === 'hint' && isOwned) {
-            gradient = 'linear-gradient(90deg, #FFD406 0%, #FF8C00 100%)';
+            gradient = 'linear-gradient(to top, #FF8C00, #FFD406)';
             title = 'Gợi ý';
             icon = (
-                <svg width="20" height="20" viewBox="0 0 48 47" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M17.9837 39.5107C17.9837 38.625 17.9687 37.7318 17.9912 36.8461C17.9987 36.5684 17.9011 36.4333 17.6609 36.3057C13.7129 34.204 11.116 31.0216 10.2453 26.6081C9.44221 22.5099 10.3654 18.7495 12.9174 15.4394C15.1916 12.4896 18.2089 10.6582 21.9016 10.1478C27.0806 9.43474 31.4339 11.116 34.8039 15.1167C37.2733 18.0439 38.3091 21.4966 37.9338 25.3096C37.5285 29.4979 35.4794 32.7779 32.0944 35.2398C31.5615 35.6302 30.9835 35.9679 30.3981 36.2682C30.0753 36.4333 29.9928 36.6284 29.9928 36.9587C30.0078 38.5875 30.0003 40.2087 30.0003 41.8375C29.9928 44.2619 28.2665 46.0032 25.8496 46.0258C24.6112 46.0333 23.3728 46.0333 22.1343 46.0258C19.71 46.0032 17.9837 44.2619 17.9837 41.8375C17.9762 41.0644 17.9837 40.2913 17.9837 39.5107ZM25.9772 41.9876C25.9772 41.8075 25.9772 41.6498 25.9772 41.4922C25.9772 39.0903 25.9847 36.6885 25.9697 34.2866C25.9697 33.9864 26.0598 33.8288 26.345 33.7462C26.7053 33.6411 27.0505 33.506 27.4033 33.3784C32.0268 31.6971 34.7439 26.9009 33.8057 22.0746C32.7474 16.6479 27.5159 13.1276 22.0743 14.1709C14.5911 15.6121 11.4237 24.6791 16.3775 30.4736C17.7735 32.1024 19.5524 33.1232 21.5789 33.7312C21.9242 33.8363 22.0142 34.0014 22.0067 34.3467C21.9917 36.7335 21.9992 39.1204 21.9992 41.5147C21.9992 41.6724 22.0142 41.83 22.0217 41.9876C23.3577 41.9876 24.6412 41.9876 25.9772 41.9876Z" fill="white"/>
                     <path d="M22.0078 5.95964C22.0078 3.95558 22.0078 1.98905 22.0078 0C23.3363 0 24.6423 0 25.9708 0C25.9708 1.98905 25.9708 3.96309 25.9708 5.95964C24.6573 5.95964 23.3513 5.95964 22.0078 5.95964Z" fill="white"/>
                     <path d="M5.95951 25.978C3.97051 25.978 2.00402 25.978 0 25.978C0 24.6645 0 23.3585 0 22.0225C1.97399 22.0225 3.95549 22.0225 5.95951 22.0225C5.95951 23.3435 5.95951 24.6495 5.95951 25.978Z" fill="white"/>
@@ -109,7 +109,7 @@ const HelpTool: React.FC<HelpToolProps> = ({ className = '', userBag, onToolUsed
                 </svg>
             );
         } else if (type === 'snow' && isOwned) {
-            gradient = 'linear-gradient(135deg, #644EFD 0%, #0A0158 100%)';
+            gradient = 'linear-gradient(to top, #0A0158, #644EFD)';
             title = 'Bông tuyết';
             icon = (
                 <svg width="20" height="20" viewBox="0 0 43 48" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -117,7 +117,7 @@ const HelpTool: React.FC<HelpToolProps> = ({ className = '', userBag, onToolUsed
                 </svg>
             );
         } else if (type === 'blockTop1' && isOwned) {
-            gradient = 'linear-gradient(135deg, #E05B00 0%, #250000 100%)';
+            gradient = 'linear-gradient(to top, #250000, #E05B00)';
             title = 'Chặn Top 1';
             icon = (
                 <svg width="20" height="20" viewBox="0 0 73 73" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -125,7 +125,7 @@ const HelpTool: React.FC<HelpToolProps> = ({ className = '', userBag, onToolUsed
                 </svg>
             );
         } else if (type === 'blockBehind' && isOwned) {
-            gradient = 'linear-gradient(135deg, #DC00E0 0%, #250000 100%)';
+            gradient = 'linear-gradient(to top,#250000, #DC00E0)';
             title = 'Chặn phía sau';
             icon = (
                 <svg width="20" height="20" viewBox="0 0 73 73" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -150,7 +150,7 @@ const HelpTool: React.FC<HelpToolProps> = ({ className = '', userBag, onToolUsed
                     style={{
                         background: gradient,
                         boxShadow: isOwned 
-                            ? `0 4px 4px rgba(0, 0, 0, 0.3), inset 0 -4px 4px rgba(255, 255, 255, 0.2)` 
+                            ? `0 4px 4px rgba(0, 0, 0, 0.3), inset 0 -4px 4px rgba(255, 255, 255, 0.4)` 
                             : `0 4px 4px rgba(7, 0, 73, 0.3), inset 0 -4px 4px rgba(255, 255, 255, 0.2)`
                     }}
                     disabled={!isOwned}
@@ -166,8 +166,8 @@ const HelpTool: React.FC<HelpToolProps> = ({ className = '', userBag, onToolUsed
                 
                 {/* Quantity badge ở góc dưới bên trái */}
                 {isOwned && (
-                    <div className="absolute -bottom-1 -left-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-white">
-                        {quantity}
+                    <div className="absolute -top-1 -right-1 text-white text-[9px] font-bold rounded-full w-5 h-5 flex items-center justify-center bg-red-600" style={{boxShadow: '0 2px 6px rgba(0, 0, 0, 0.4)'}}>
+                        {quantity > 9 ? '9+' : quantity}
                     </div>
                 )}
             </div>
