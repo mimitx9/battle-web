@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
+import React, { useState, useEffect, useImperativeHandle, forwardRef, useMemo } from 'react';
 import ToolEffect from './ToolEffect';
 
 interface Option {
@@ -17,12 +17,13 @@ interface Question {
         image?: string;
     };
     detailAnswer?: string;
+    isHotQuestion?: boolean; // Thêm trường để đánh dấu Hot question
 }
 
 interface QuizCardProps {
     questions?: Question[];
     onSubmitAnswer?: (questionId: number, answerId: number, isCorrect: boolean, answerTime: number) => void;
-    submitAnswer?: (questionId: number, isCorrect: boolean, answerTime: number, difficulty: string) => void;
+    submitAnswer?: (questionId: number, isCorrect: boolean, answerTime: number, difficulty: string, insane?: boolean) => void;
     onHintUsed?: (questionId: number) => void; // Callback khi sử dụng hint
     scoreChange?: number; // Điểm số thay đổi từ server response
 }
@@ -32,6 +33,17 @@ export interface QuizCardRef {
     useSnow: () => void;
     showToolEffect: (toolType: string) => void;
 }
+
+// Hàm để phát hiện Hot question dựa trên random tỉ lệ cao hơn (khoảng 5-8 câu thì ra 1 câu hot)
+const detectHotQuestion = (question: Question): Question => {
+    // Random khoảng 15-20% chance để trở thành Hot question (tương đương 5-8 câu thì ra 1 câu hot)
+    const randomChance = Math.random() < 0.18; // 18% chance
+    
+    return {
+        ...question,
+        isHotQuestion: randomChance
+    };
+};
 
 const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSubmitAnswer = () => {}, submitAnswer, onHintUsed, scoreChange }, ref) => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -65,10 +77,36 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
                 image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect fill='%23e5e5e5' width='200' height='200'/%3E%3Ctext x='100' y='100' text-anchor='middle' dy='.3em' fill='%23999' font-size='16'%3EAnatomy Image%3C/text%3E%3C/svg%3E"
             },
             detailAnswer: "Thần kinh quay kiểm soát các cơ và cảm giác ở vùng đó."
+        },
+        {
+            questionId: 2,
+            question: "AI là gì?", // Câu hỏi ngắn để test Hot question
+            options: [
+                { answerId: 5, text: "Trí tuệ nhân tạo", isCorrect: true },
+                { answerId: 6, text: "Trí tuệ tự nhiên", isCorrect: false },
+                { answerId: 7, text: "Trí tuệ máy tính", isCorrect: false },
+                { answerId: 8, text: "Trí tuệ điện tử", isCorrect: false }
+            ],
+            detailAnswer: "AI là viết tắt của Artificial Intelligence - Trí tuệ nhân tạo."
+        },
+        {
+            questionId: 3,
+            question: "Trong lập trình web hiện đại, việc sử dụng React.js với TypeScript đã trở thành một tiêu chuẩn phổ biến trong việc phát triển các ứng dụng frontend phức tạp và có khả năng mở rộng cao, đặc biệt là trong các dự án enterprise lớn với yêu cầu về performance và maintainability?", // Câu hỏi rất dài để test Hot question
+            options: [
+                { answerId: 9, text: "Đúng", isCorrect: true },
+                { answerId: 10, text: "Sai", isCorrect: false },
+                { answerId: 11, text: "Không chắc chắn", isCorrect: false },
+                { answerId: 12, text: "Tùy thuộc vào dự án", isCorrect: false }
+            ],
+            detailAnswer: "React.js với TypeScript thực sự là một combo mạnh mẽ cho phát triển web hiện đại."
         }
     ];
 
-    const questionsToUse = questions && questions.length > 0 ? questions : demoQuestions;
+    // Áp dụng logic phát hiện Hot question cho tất cả câu hỏi - sử dụng useMemo để tránh re-render
+    const questionsToUse = useMemo(() => {
+        const baseQuestions = questions && questions.length > 0 ? questions : demoQuestions;
+        return baseQuestions.map(detectHotQuestion);
+    }, [questions]);
 
     // Reset state when questions change
     useEffect(() => {
@@ -137,7 +175,9 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
         if (submitAnswer) {
             // Determine difficulty based on question or use default
             const difficulty = 'medium'; // Default difficulty
-            submitAnswer(currentQuestion.questionId, correct, answerTime, difficulty);
+            // Gửi thêm thông tin insane=true nếu là Hot question
+            const isInsane = currentQuestion.isHotQuestion || false;
+            submitAnswer(currentQuestion.questionId, correct, answerTime, difficulty, isInsane);
         }
 
         // Delay before card draw animation
@@ -335,6 +375,20 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
                     )}
 
                     <div className="relative z-10 px-4 py-6 sm:px-8 sm:py-12 flex flex-col h-full overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white">
+                        {/* Hot Question Tag */}
+                        {currentQuestion.isHotQuestion && (
+                            <div className={`mb-4 transition-all duration-500 ease-out ${
+                                isDrawingCard ? 'opacity-0 transform translate-y-4' : 'opacity-100 transform translate-y-0'
+                            }`}>
+                                <div className="inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-red-500 to-orange-500 text-white text-xs font-bold shadow-lg">
+                                    <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
+                                    </svg>
+                                    INSANE
+                                </div>
+                            </div>
+                        )}
+
                         {/* Question Text */}
                         <div className={`mb-6 transition-all duration-500 ease-out ${
                             isDrawingCard ? 'opacity-0 transform translate-y-4' : 'opacity-100 transform translate-y-0'
@@ -441,7 +495,7 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
                                      backgroundClip: 'text',
                                      animation: showResult ? 'popup 0.6s ease-out' : 'none'
                                  }}>
-{isCorrect ? `+${scoreChange || 200}` : '0'}
+{isCorrect && scoreChange ? `+${scoreChange}` : '0'}
                             </div>
                     </div>
                 )}

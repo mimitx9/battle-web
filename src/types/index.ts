@@ -388,6 +388,7 @@ export interface SubmitAnswerMessage {
     isCorrect: boolean;
     answerTime: number;
     difficulty: string;
+    insane?: boolean; // Thêm trường insane cho Hot question
 }
 
 export interface AnswerSubmittedMessage {

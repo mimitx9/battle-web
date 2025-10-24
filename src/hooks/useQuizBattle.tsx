@@ -37,7 +37,7 @@ interface UseQuizBattleReturn {
     refreshRooms: () => Promise<void>;
     onCooldownComplete: () => void;
     onRoomTransitionComplete: () => void;
-    submitAnswer: (questionId: number, isCorrect: boolean, answerTime: number, difficulty: string) => void;
+    submitAnswer: (questionId: number, isCorrect: boolean, answerTime: number, difficulty: string, insane?: boolean) => void;
     sendHelpTool: (toolType: string) => void;
     onScoreChange?: (scoreChange: number) => void; // Callback để nhận scoreChange
 }
@@ -520,8 +520,8 @@ export const useQuizBattle = (onScoreChange?: (scoreChange: number) => void): Us
     }, [currentRoom, addNotification]);
 
     // Submit answer function
-    const submitAnswer = useCallback((questionId: number, isCorrect: boolean, answerTime: number, difficulty: string) => {
-        console.log('🔍 Submitting answer:', { questionId, isCorrect, answerTime, difficulty });
+    const submitAnswer = useCallback((questionId: number, isCorrect: boolean, answerTime: number, difficulty: string, insane?: boolean) => {
+        console.log('🔍 Submitting answer:', { questionId, isCorrect, answerTime, difficulty, insane });
         
         if (!roomWsRef.current || roomWsRef.current.readyState !== WebSocket.OPEN) {
             console.error('❌ Room WebSocket not connected, cannot submit answer');
@@ -533,7 +533,8 @@ export const useQuizBattle = (onScoreChange?: (scoreChange: number) => void): Us
             questionId,
             isCorrect,
             answerTime,
-            difficulty
+            difficulty,
+            insane: insane || false
         };
 
         console.log('🔍 Sending submit answer message:', message);
