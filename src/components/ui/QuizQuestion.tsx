@@ -9,6 +9,8 @@ interface QuizQuestionProps {
     totalQuestions: number;
     onAnswer: (questionId: number, answerId: number, isCorrect: boolean, answerTime: number) => void;
     onNext: () => void;
+    hiddenAnswers?: number[]; // Danh sách các answerId bị ẩn do hint
+    onHintUsed?: () => void; // Callback khi sử dụng hint
 }
 
 const QuizQuestion: React.FC<QuizQuestionProps> = ({
@@ -16,7 +18,9 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
     questionNumber,
     totalQuestions,
     onAnswer,
-    onNext
+    onNext,
+    hiddenAnswers = [],
+    onHintUsed
 }) => {
     const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
     const [showResult, setShowResult] = useState(false);
@@ -127,22 +131,38 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
                     <div className="space-y-4 mb-8">
                         {question.options.map((option, index) => {
                             const answerLabel = String.fromCharCode(65 + index); // A, B, C, D
+                            const isHidden = hiddenAnswers.includes(option.answerId);
+                            
                             return (
                                 <button
                                     key={option.answerId}
-                                    onClick={() => handleAnswerSelect(option.answerId)}
-                                    disabled={showResult}
+                                    onClick={() => !isHidden && handleAnswerSelect(option.answerId)}
+                                    disabled={showResult || isHidden}
                                     className={`
                                         w-full p-4 rounded-xl border-2 transition-all duration-200
                                         flex items-center justify-between
-                                        ${getAnswerButtonClass(option.answerId)}
-                                        ${!showResult ? 'hover:shadow-md cursor-pointer' : 'cursor-default'}
+                                        ${isHidden 
+                                            ? 'bg-gray-100 text-gray-500 border-gray-300 cursor-not-allowed' 
+                                            : getAnswerButtonClass(option.answerId)
+                                        }
+                                        ${!showResult && !isHidden ? 'hover:shadow-md cursor-pointer' : 'cursor-default'}
                                     `}
                                 >
-                                    <span className="font-medium">
-                                        {answerLabel}. {option.text}
+                                    <span className="font-medium flex items-center">
+                                        {isHidden ? (
+                                            <>
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2">
+                                                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                                    <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2"/>
+                                                    <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                                                </svg>
+                                                Đáp án sai đã bị ẩn
+                                            </>
+                                        ) : (
+                                            `${answerLabel}. ${option.text}`
+                                        )}
                                     </span>
-                                    {getAnswerIcon(option.answerId)}
+                                    {!isHidden && getAnswerIcon(option.answerId)}
                                 </button>
                             );
                         })}

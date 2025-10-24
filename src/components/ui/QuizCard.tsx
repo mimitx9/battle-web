@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 
 interface Option {
     answerId: number;
@@ -22,9 +22,14 @@ interface QuizCardProps {
     questions?: Question[];
     onSubmitAnswer?: (questionId: number, answerId: number, isCorrect: boolean, answerTime: number) => void;
     submitAnswer?: (questionId: number, isCorrect: boolean, answerTime: number, difficulty: string) => void;
+    onHintUsed?: (questionId: number) => void; // Callback khi sử dụng hint
 }
 
-const QuizCard = ({ questions = [], onSubmitAnswer = () => {}, submitAnswer }: QuizCardProps) => {
+export interface QuizCardRef {
+    useHint: () => void;
+}
+
+const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSubmitAnswer = () => {}, submitAnswer, onHintUsed }, ref) => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [answers, setAnswers] = useState<any[]>([]);
     const [score, setScore] = useState(0);
@@ -35,6 +40,12 @@ const QuizCard = ({ questions = [], onSubmitAnswer = () => {}, submitAnswer }: Q
     const [isDrawingCard, setIsDrawingCard] = useState(false);
     const [cardStack, setCardStack] = useState([0, 1, 2]); // Stack of card indices
     const [startTime, setStartTime] = useState<number>(Date.now());
+    const [hiddenAnswers, setHiddenAnswers] = useState<number[]>([]); // Danh sách các answerId bị ẩn do hint
+
+    // Expose hint function to parent component
+    useImperativeHandle(ref, () => ({
+        useHint: handleHintUsed
+    }));
 
     // Mock questions for demo
     const demoQuestions: Question[] = [
@@ -67,6 +78,7 @@ const QuizCard = ({ questions = [], onSubmitAnswer = () => {}, submitAnswer }: Q
         setIsAnimating(false);
         setIsDrawingCard(false);
         setStartTime(Date.now());
+        setHiddenAnswers([]); // Reset hidden answers khi questions thay đổi
     }, [questionsToUse]);
 
     // Reset state when question changes
@@ -77,6 +89,7 @@ const QuizCard = ({ questions = [], onSubmitAnswer = () => {}, submitAnswer }: Q
         setIsAnimating(false);
         setIsDrawingCard(false);
         setStartTime(Date.now());
+        setHiddenAnswers([]); // Reset hidden answers khi chuyển sang câu hỏi tiếp theo
     }, [currentQuestionIndex]);
 
     const handleAnswerSelect = (answerId: number) => {
@@ -136,6 +149,39 @@ const QuizCard = ({ questions = [], onSubmitAnswer = () => {}, submitAnswer }: Q
                 }, 300);
             }, 400);
         }, 1500);
+    };
+
+    // Function để xử lý khi sử dụng hint
+    const handleHintUsed = () => {
+        const currentQuestion = questionsToUse[currentQuestionIndex];
+        if (!currentQuestion) return;
+
+        // Tìm các đáp án sai
+        const wrongAnswers = currentQuestion.options
+            .filter(option => !option.isCorrect)
+            .map(option => option.answerId);
+
+        // Nếu đã có đáp án bị ẩn, không làm gì thêm
+        if (hiddenAnswers.length > 0) return;
+
+        // Chọn ngẫu nhiên 1/2 số đáp án sai để ẩn
+        if (wrongAnswers.length > 0) {
+            const answersToHide = [];
+            const shuffledAnswers = [...wrongAnswers].sort(() => Math.random() - 0.5);
+            
+            // Tính số đáp án sai cần ẩn: 1/2 số đáp án sai (làm tròn lên)
+            const countToHide = Math.ceil(wrongAnswers.length / 2);
+            for (let i = 0; i < countToHide; i++) {
+                answersToHide.push(shuffledAnswers[i]);
+            }
+            
+            setHiddenAnswers(answersToHide);
+            
+            // Gọi callback để thông báo cho parent component
+            if (onHintUsed) {
+                onHintUsed(currentQuestion.questionId);
+            }
+        }
     };
 
     const getAnswerButtonClass = (answerId: number) => {
@@ -232,22 +278,38 @@ const QuizCard = ({ questions = [], onSubmitAnswer = () => {}, submitAnswer }: Q
                         }`}>
                             {currentQuestion.options.map((option: Option, index: number) => {
                                 const answerLabel = String.fromCharCode(65 + index);
+                                const isHidden = hiddenAnswers.includes(option.answerId);
+                                
                                 return (
                                     <button
                                         key={option.answerId}
-                                        onClick={() => handleAnswerSelect(option.answerId)}
-                                        disabled={showResult}
+                                        onClick={() => !isHidden && handleAnswerSelect(option.answerId)}
+                                        disabled={showResult || isHidden}
                                         className={`
                                             w-full p-3 rounded-xl border-2 transition-all duration-200
                                             flex items-center justify-between text-xs sm:text-sm font-medium
-                                            ${getAnswerButtonClass(option.answerId)}
-                                            ${!showResult ? 'hover:shadow-lg cursor-pointer transform hover:scale-102' : 'cursor-default'}
+                                            ${isHidden 
+                                                ? 'bg-gray-100 text-gray-500 border-gray-300 cursor-not-allowed' 
+                                                : getAnswerButtonClass(option.answerId)
+                                            }
+                                            ${!showResult && !isHidden ? 'hover:shadow-lg cursor-pointer transform hover:scale-102' : 'cursor-default'}
                                         `}
                                     >
-                                        <span className="text-left flex-1 pr-2">
-                                            {answerLabel}. {option.text}
+                                        <span className="text-left flex-1 pr-2 flex items-center">
+                                            {isHidden ? (
+                                                <>
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2 flex-shrink-0">
+                                                        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                                        <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2"/>
+                                                        <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                                                    </svg>
+                                                    Đáp án sai đã bị ẩn
+                                                </>
+                                            ) : (
+                                                `${answerLabel}. ${option.text}`
+                                            )}
                                         </span>
-                                        {getAnswerIcon(option.answerId)}
+                                        {!isHidden && getAnswerIcon(option.answerId)}
                                     </button>
                                 );
                             })}
@@ -270,11 +332,14 @@ const QuizCard = ({ questions = [], onSubmitAnswer = () => {}, submitAnswer }: Q
                                 )}
                             </div>
                         )}
+
                     </div>
                 </div>
             </div>
         </div>
     );
-};
+});
+
+QuizCard.displayName = 'QuizCard';
 
 export default QuizCard;

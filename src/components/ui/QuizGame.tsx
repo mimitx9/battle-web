@@ -8,6 +8,7 @@ interface QuizGameProps {
     questions: Question[];
     onQuizComplete: (score: number, totalQuestions: number) => void;
     onSubmitAnswer: (questionId: number, answerId: number, isCorrect: boolean) => void;
+    onHintUsed?: (questionId: number) => void; // Callback khi sử dụng hint
 }
 
 interface AnswerResult {
@@ -20,12 +21,14 @@ interface AnswerResult {
 const QuizGame: React.FC<QuizGameProps> = ({
     questions,
     onQuizComplete,
-    onSubmitAnswer
+    onSubmitAnswer,
+    onHintUsed
 }) => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [answers, setAnswers] = useState<AnswerResult[]>([]);
     const [score, setScore] = useState(0);
     const [isCompleted, setIsCompleted] = useState(false);
+    const [hiddenAnswers, setHiddenAnswers] = useState<number[]>([]); // Danh sách các answerId bị ẩn do hint
 
     // Reset game state when questions change
     useEffect(() => {
@@ -33,7 +36,13 @@ const QuizGame: React.FC<QuizGameProps> = ({
         setAnswers([]);
         setScore(0);
         setIsCompleted(false);
+        setHiddenAnswers([]); // Reset hidden answers khi questions thay đổi
     }, [questions]);
+
+    // Reset hidden answers khi chuyển sang câu hỏi tiếp theo
+    useEffect(() => {
+        setHiddenAnswers([]);
+    }, [currentQuestionIndex]);
 
     const handleAnswer = (questionId: number, answerId: number, isCorrect: boolean) => {
         // Record the answer
@@ -62,6 +71,39 @@ const QuizGame: React.FC<QuizGameProps> = ({
             // Quiz completed
             setIsCompleted(true);
             onQuizComplete(score, questions.length);
+        }
+    };
+
+    // Function để xử lý khi sử dụng hint
+    const handleHintUsed = () => {
+        const currentQuestion = questions[currentQuestionIndex];
+        if (!currentQuestion) return;
+
+        // Tìm các đáp án sai
+        const wrongAnswers = currentQuestion.options
+            .filter(option => !option.isCorrect)
+            .map(option => option.answerId);
+
+        // Nếu đã có đáp án bị ẩn, không làm gì thêm
+        if (hiddenAnswers.length > 0) return;
+
+        // Chọn ngẫu nhiên 1/2 số đáp án sai để ẩn
+        if (wrongAnswers.length > 0) {
+            const answersToHide = [];
+            const shuffledAnswers = [...wrongAnswers].sort(() => Math.random() - 0.5);
+            
+            // Tính số đáp án sai cần ẩn: 1/2 số đáp án sai (làm tròn lên)
+            const countToHide = Math.ceil(wrongAnswers.length / 2);
+            for (let i = 0; i < countToHide; i++) {
+                answersToHide.push(shuffledAnswers[i]);
+            }
+            
+            setHiddenAnswers(answersToHide);
+            
+            // Gọi callback để thông báo cho parent component
+            if (onHintUsed) {
+                onHintUsed(currentQuestion.questionId);
+            }
         }
     };
 
@@ -146,6 +188,8 @@ const QuizGame: React.FC<QuizGameProps> = ({
             totalQuestions={questions.length}
             onAnswer={handleAnswer}
             onNext={handleNext}
+            hiddenAnswers={hiddenAnswers}
+            onHintUsed={handleHintUsed}
         />
     );
 };

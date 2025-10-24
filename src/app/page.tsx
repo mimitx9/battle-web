@@ -2,6 +2,7 @@
 
 import React, {useEffect, useRef, useState} from 'react';
 import {RoomList, LoadingSpinner, CooldownOverlay, QuizCard, Leaderboard, HelpTool} from '@/components/ui';
+import {QuizCardRef} from '@/components/ui/QuizCard';
 import {useAuth} from '@/hooks/useAuth';
 import {useQuizBattle} from '../hooks/useQuizBattle';
 import HomeLoginForm from '@/components/ui/HomeLoginForm';
@@ -32,6 +33,8 @@ const HomePage: React.FC = () => {
     
     const hasInitializedRef = useRef(false);
     const [showQuiz, setShowQuiz] = useState(false);
+    const quizCardRef = useRef<QuizCardRef>(null);
+    const [userBag, setUserBag] = useState(user?.userBag || {});
 
     // Initialize WebSocket khi user đã đăng nhập - chỉ chạy 1 lần
     useEffect(() => {
@@ -55,6 +58,13 @@ const HomePage: React.FC = () => {
             setShowQuiz(true);
         }
     }, [quizQuestions, showCooldown]);
+
+    // Cập nhật userBag khi user thay đổi
+    useEffect(() => {
+        if (user?.userBag) {
+            setUserBag(user.userBag);
+        }
+    }, [user?.userBag]);
 
     // Handler để xử lý khi click vào room
     const handleRoomClick = (room: any) => {
@@ -82,6 +92,28 @@ const HomePage: React.FC = () => {
         } catch (error) {
             console.error('❌ Failed to submit answer:', error);
         }
+    };
+
+    // Handler để xử lý khi sử dụng hint từ HelpTool
+    const handleHintUsed = (questionId: number) => {
+        console.log('🔍 Hint used for question:', questionId);
+        // Logic hint sẽ được xử lý trong QuizCard component
+    };
+
+    // Handler để xử lý khi HelpTool được sử dụng
+    const handleHelpToolUsed = (toolType: string) => {
+        console.log('🔍 Help tool used:', toolType);
+        if (toolType === 'battleHint') {
+            // Trigger hint functionality trong QuizCard
+            if (quizCardRef.current) {
+                quizCardRef.current.useHint();
+            }
+        }
+    };
+
+    // Handler để cập nhật userBag từ HelpTool
+    const handleUserBagUpdate = (updatedUserBag: any) => {
+        setUserBag(updatedUserBag);
     };
 
     // Handler khi quiz hoàn thành
@@ -143,14 +175,18 @@ const HomePage: React.FC = () => {
                                     <>
                                         <div className="flex-1 min-h-0">
                                             <QuizCard
+                                                ref={quizCardRef}
                                                 questions={quizQuestions}
                                                 onSubmitAnswer={handleQuizAnswer}
+                                                onHintUsed={handleHintUsed}
                                             />
                                         </div>
                                         {/* Help Tool bên dưới Quiz Card */}
                                         <HelpTool 
-                                            userBag={user?.userBag as any} 
+                                            userBag={userBag as any} 
                                             sendHelpTool={sendHelpTool}
+                                            onToolUsed={handleHelpToolUsed}
+                                            onUserBagUpdate={handleUserBagUpdate}
                                         />
                                     </>
                                 ) : (

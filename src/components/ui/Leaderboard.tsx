@@ -20,14 +20,6 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
     showMockData = false,
     currentUserId
 }) => {
-    // Debug logs
-    console.log('🔍 Leaderboard props:', { 
-        rankingsLength: rankings.length, 
-        rankings, 
-        showMockData, 
-        isLoading 
-    });
-
     // Mock data nếu không có rankings
     const mockRankings: RankingEntry[] = [
         { 
@@ -142,9 +134,6 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
 
     // Chỉ hiển thị mock data khi được yêu cầu (để demo)
     const displayRankings = showMockData ? mockRankings : rankings;
-    
-    console.log('🔍 Display rankings:', displayRankings);
-
     const getRankIcon = (rank: number) => {
         switch (rank) {
             case 1:
