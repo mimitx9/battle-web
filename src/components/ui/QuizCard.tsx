@@ -211,7 +211,7 @@ const QuizCard = ({ questions = [], onSubmitAnswer = () => {}, submitAnswer }: Q
                     isDrawingCard ? 'transform translate-y-0 scale-100 opacity-100' : 'transform translate-y-0 scale-100 opacity-100'
                 }`}>
 
-                    <div className="relative z-10 px-4 py-6 sm:px-8 sm:py-12 flex flex-col h-full overflow-y-auto">
+                    <div className="relative z-10 px-4 py-6 sm:px-8 sm:py-12 flex flex-col h-full overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white">
                         {/* Question Text */}
                         <div className={`mb-6 transition-all duration-500 ease-out ${
                             isDrawingCard ? 'opacity-0 transform translate-y-4' : 'opacity-100 transform translate-y-0'
@@ -237,7 +237,7 @@ const QuizCard = ({ questions = [], onSubmitAnswer = () => {}, submitAnswer }: Q
                         )}
 
                         {/* Answer Options */}
-                        <div className={`space-y-3 mb-4 transition-all duration-500 ease-out delay-200 ${
+                        <div className={`space-y-3 mb-4 transition-all duration-500 ease-out ${
                             isDrawingCard ? 'opacity-0 transform translate-y-4' : 'opacity-100 transform translate-y-0'
                         }`}>
                             {currentQuestion.options.map((option: Option, index: number) => {
@@ -248,7 +248,7 @@ const QuizCard = ({ questions = [], onSubmitAnswer = () => {}, submitAnswer }: Q
                                         onClick={() => handleAnswerSelect(option.answerId)}
                                         disabled={showResult}
                                         className={`
-                                            w-full p-5 rounded-2xl border-2 transition-all duration-200
+                                            w-full p-5 rounded-2xl border-2
                                             flex items-center justify-between text-sm sm:text-base
                                             ${getAnswerButtonClass(option.answerId)}
                                             ${!showResult ? 'cursor-pointer' : 'cursor-default'}
