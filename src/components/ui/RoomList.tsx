@@ -52,7 +52,7 @@ const RoomList: React.FC<RoomListProps> = ({ rooms, currentRoom, onRoomClick }) 
         <div className="relative w-full">
           <input
             type="text"
-            placeholder="Tìm kiếm theo tên hoặc mã room"
+            placeholder="Tìm phòng..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onFocus={() => setIsSearchFocused(true)}

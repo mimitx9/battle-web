@@ -341,21 +341,17 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
                     
                     {/* BattleSnow Protection Overlay */}
                     {isProtectedBySnow && (
-                        <div className="absolute inset-0 z-20 pointer-events-none">
+                        <div className="absolute inset-0 z-5 pointer-events-none">
                             {/* Background protection effect */}
                             <div 
-                                className="absolute inset-0 opacity-20"
-                                style={{
-                                    background: 'linear-gradient(135deg, rgba(10, 1, 88, 0.3) 0%, rgba(100, 78, 253, 0.3) 50%, rgba(10, 1, 88, 0.3) 100%)',
-                                    animation: 'snowfall 3s ease-in-out infinite'
-                                }}
+                                className="absolute inset-0 bg-blue-500 opacity-10"
                             />
                             
                             {/* Snowflakes animation */}
                             {[...Array(20)].map((_, i) => (
                                 <div
                                     key={i}
-                                    className="absolute text-white/60 text-xs animate-bounce"
+                                    className="absolute text-white text-xl animate-bounce"
                                     style={{
                                         left: `${Math.random() * 100}%`,
                                         top: `${Math.random() * 100}%`,
@@ -368,8 +364,8 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
                             ))}
                             
                             {/* Protection indicator */}
-                            <div className="absolute top-4 right-4 bg-blue-500/80 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                <span>Được bảo vệ</span>
+                            <div className="absolute top-3 right-3 bg-blue-500/80 text-white px-3 py-2 rounded-full text-[10px] font-medium flex items-center gap-1">
+                                <span>Bảo toàn điểm</span>
                             </div>
                         </div>
                     )}
@@ -377,10 +373,10 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
                     <div className="relative z-10 px-4 py-6 sm:px-8 sm:py-12 flex flex-col h-full overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white">
                         {/* Hot Question Tag */}
                         {currentQuestion.isHotQuestion && (
-                            <div className={`mb-4 transition-all duration-500 ease-out ${
+                            <div className={`mb-4 animate-bounce transition-all duration-500 ease-out ${
                                 isDrawingCard ? 'opacity-0 transform translate-y-4' : 'opacity-100 transform translate-y-0'
                             }`}>
-                                <div className="inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-red-500 to-orange-500 text-white text-xs font-bold shadow-lg">
+                                <div className="inline-flex items-center px-3 py-1 rounded-full bg-orange-500 text-white text-xs font-bold">
                                     <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                         <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
                                     </svg>
@@ -430,22 +426,22 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
                                             w-full p-5 rounded-2xl border-2
                                             flex items-center justify-between text-sm sm:text-base
                                             ${isHidden 
-                                                ? 'bg-gray-100 text-gray-500 border-gray-300 cursor-not-allowed' 
+                                                ? 'bg-gray-50 text-gray-400 border-gray-100 cursor-not-allowed' 
                                                 : getAnswerButtonClass(option.answerId)
                                             }
                                             ${!showResult && !isHidden ? 'cursor-pointer' : 'cursor-default'}
                                         `}
                                         style={{
-                                            boxShadow: !showResult ? '0 4px 0 0 rgba(0, 0, 0, 0.05)' : undefined
+                                            boxShadow: !showResult && !isHidden ? '0 4px 0 0 rgba(0, 0, 0, 0.05)' : undefined
                                         }}
                                         onMouseEnter={(e) => {
-                                            if (!showResult) {
+                                            if (!showResult && !isHidden) {
                                                 e.currentTarget.style.boxShadow = 'none';
                                                 e.currentTarget.style.transform = 'translateY(4px)';
                                             }
                                         }}
                                         onMouseLeave={(e) => {
-                                            if (!showResult) {
+                                            if (!showResult && !isHidden) {
                                                 e.currentTarget.style.boxShadow = '0 4px 0 0 rgba(0, 0, 0, 0.05)';
                                                 e.currentTarget.style.transform = 'translateY(0px)';
                                             }
@@ -454,12 +450,9 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
                                         <span className="text-left flex-1 text-gray-600">
                                             {isHidden ? (
                                                 <>
-                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2 flex-shrink-0">
-                                                        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                                        <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2"/>
-                                                        <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                                                    </svg>
-                                                    Đáp án sai đã bị ẩn
+                                                    <span className="text-gray-400 line-through">
+                                                        {answerLabel}. {option.text}
+                                                    </span>
                                                 </>
                                             ) : (
                                                 `${answerLabel}. ${option.text}`
