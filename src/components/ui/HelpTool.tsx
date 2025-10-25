@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Tooltip from './Tooltip';
+import { playClickSound, playSkillSound } from '@/lib/soundUtils';
 
 interface HelpToolProps {
     className?: string;
@@ -66,6 +67,9 @@ const HelpTool: React.FC<HelpToolProps> = ({ className = '', userBag, onToolUsed
             };
             onUserBagUpdate(updatedUserBag);
         }
+        
+        // Play skill sound when using any tool
+        playSkillSound();
         
         // Gửi message lên server qua WebSocket với format chính xác
         sendHelpTool(serverToolType);
@@ -174,6 +178,11 @@ const HelpTool: React.FC<HelpToolProps> = ({ className = '', userBag, onToolUsed
                                 : `0 4px 4px rgba(7, 0, 73, 0.3), inset 0 -4px 4px rgba(255, 255, 255, 0.2)`
                         }}
                         disabled={!isOwned}
+                        onMouseEnter={() => {
+                            if (isOwned && type !== 'hide') {
+                                playClickSound();
+                            }
+                        }}
                         onClick={() => {
                             if (isOwned && type !== 'hide') {
                                 handleToolClick(type);

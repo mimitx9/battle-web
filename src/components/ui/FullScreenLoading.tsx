@@ -46,7 +46,7 @@ const FullScreenLoading: React.FC<FullScreenLoadingProps> = ({
         {/* Loading SVG Animation */}
         <div className={`${sizeClasses[size]} mb-6 animate-pulse`}>
           <Image
-            src="/logos/loading.svg"
+            src="/logos/loading.png"
             alt="Loading"
             width={size === 'sm' ? 64 : size === 'md' ? 96 : size === 'lg' ? 128 : 160}
             height={size === 'sm' ? 64 : size === 'md' ? 96 : size === 'lg' ? 128 : 160}

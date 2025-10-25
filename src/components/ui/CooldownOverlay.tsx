@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { playCountdownSound } from '@/lib/soundUtils';
 
 interface CooldownOverlayProps {
     isVisible: boolean;
@@ -20,6 +21,9 @@ const CooldownOverlay: React.FC<CooldownOverlayProps> = ({ isVisible, onComplete
         }
 
         setIsAnimating(true);
+        
+        // Play countdown sound when cooldown starts
+        playCountdownSound();
         
         const timer = setInterval(() => {
             setCountdown((prev) => {
@@ -43,18 +47,20 @@ const CooldownOverlay: React.FC<CooldownOverlayProps> = ({ isVisible, onComplete
     const getImageSrc = () => {
         switch (countdown) {
             case 3:
-                return '/logos/home/3.svg';
+                return '/logos/home/3.png';
             case 2:
-                return '/logos/home/2.svg';
+                return '/logos/home/2.png';
             case 1:
-                return '/logos/home/1.svg';
+                return '/logos/home/1.png';
+            case 0:
+                return '/logos/loading.png';
             default:
-                return '/logos/home/1.svg';
+                return '/logos/kiem.png';
         }
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50">
             <div className="text-center">
                 {/* SVG Image */}
                 <div className={`transition-all duration-500 transform ${
@@ -63,15 +69,17 @@ const CooldownOverlay: React.FC<CooldownOverlayProps> = ({ isVisible, onComplete
                     <Image
                         src={getImageSrc()}
                         alt={`Countdown ${countdown}`}
-                        width={120}
-                        height={120}
-                        className="mx-auto"
+                        width={200}
+                        height={200}
+                        className={`mx-auto w-auto h-auto max-w-full ${
+                            countdown === 0 ? 'animate-ping' : ''
+                        }`}
                         priority
                     />
                 </div>
                 
                 {/* Progress Bar */}
-                <div className="mt-8 w-64 mx-auto">
+                {/* <div className="mt-8 w-64 mx-auto">
                     <div className="bg-gray-700 rounded-full h-2 overflow-hidden">
                         <div 
                             className="bg-gradient-to-r from-blue-500 to-purple-500 h-full rounded-full transition-all duration-1000 ease-out"
@@ -80,7 +88,7 @@ const CooldownOverlay: React.FC<CooldownOverlayProps> = ({ isVisible, onComplete
                             }}
                         />
                     </div>
-                </div>
+                </div> */}
             </div>
         </div>
     );

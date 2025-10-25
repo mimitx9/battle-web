@@ -99,16 +99,16 @@ const HomeLoginForm: React.FC<HomeLoginFormProps> = ({ onSuccess }) => {
     <div className="min-h-screen">
       {/* Login Modal */}
       <div className="min-h-[calc(100vh-80px)] flex items-center justify-center p-5">
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
+        <div className="w-full max-w-md bg-white rounded-3xl shadow-lg p-8">
           <div className="flex flex-col items-center justify-center mb-8">
             {error && (
-              <div className="bg-red-50 text-red-600 px-5 py-3 rounded-2xl mb-5 text-sm font-medium text-center">
+              <div className="bg-red-50 text-red-600 px-5 py-3 rounded-3xl mb-5 text-sm font-medium text-center">
                 {error}
               </div>
             )}
             <div className="flex items-center">
               <Image 
-                src="/logos/logos.svg"
+                src="/logos/falogin.png"
                 alt="FA Battle Logo"
                 width={200}
                 height={50}

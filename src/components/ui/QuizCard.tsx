@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useImperativeHandle, forwardRef, useMemo } from 'react';
 import ToolEffect from './ToolEffect';
+import { playClickSound, playStartSound, playCorrectSound, playWrongSound, playNextQuizSound, playInsaneSound, playSkillSound } from '@/lib/soundUtils';
 
 interface Option {
     answerId: number;
@@ -123,6 +124,8 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
         setShowToolEffect(false);
         setCurrentToolType('');
         setIsProtectedBySnow(false); // Reset trạng thái bảo vệ khi questions thay đổi
+        
+        // Note: Start sound is now handled by RoomTransitionLoader when entering room
     }, [questionsToUse]);
 
     // Reset state when question changes
@@ -137,7 +140,19 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
         setShowToolEffect(false);
         setCurrentToolType('');
         setIsProtectedBySnow(false); // Reset trạng thái bảo vệ khi chuyển sang câu hỏi tiếp theo
+        
+        // Note: Start sound is now handled by RoomTransitionLoader when entering room
+        
+        // Play insane sound if this is a hot question
+        const currentQuestion = questionsToUse[currentQuestionIndex];
+        if (currentQuestion?.isHotQuestion) {
+            // Delay the insane sound slightly to let start sound play first
+            setTimeout(() => {
+                playInsaneSound();
+            }, 500);
+        }
     }, [currentQuestionIndex]);
+
 
     const handleAnswerSelect = (answerId: number) => {
         if (showResult) return;
@@ -153,6 +168,13 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
 
         setIsCorrect(correct);
         setShowResult(true);
+
+        // Play correct or wrong sound
+        if (correct) {
+            playCorrectSound();
+        } else {
+            playWrongSound();
+        }
 
         const newAnswer = {
             questionId: currentQuestion.questionId,
@@ -184,6 +206,14 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
         setTimeout(() => {
             setIsDrawingCard(true);
             
+            // Play next quiz sound when transitioning to next question
+            if (correct) {
+                playNextQuizSound();
+            } else {
+                // Play start sound when wrong answer shows new quiz
+                playStartSound();
+            }
+            
             // Start the card draw effect
             setTimeout(() => {
                 if (currentQuestionIndex < questionsToUse.length - 1) {
@@ -197,7 +227,7 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
                     setIsDrawingCard(false);
                 }, 300);
             }, 400);
-        }, 1500);
+        }, 2000);
     };
 
     // Function để xử lý khi sử dụng hint
@@ -226,6 +256,9 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
             
             setHiddenAnswers(answersToHide);
             
+            // Play skill sound when using hint
+            playSkillSound();
+            
             // Gọi callback để thông báo cho parent component
             if (onHintUsed) {
                 onHintUsed(currentQuestion.questionId);
@@ -237,6 +270,9 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
     const handleSnowUsed = () => {
         // Kích hoạt trạng thái bảo vệ
         setIsProtectedBySnow(true);
+        
+        // Play skill sound when using snow skill
+        playSkillSound();
         
         // Gọi callback để thông báo cho parent component
         if (onHintUsed) {
@@ -277,9 +313,9 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
         const option = currentQuestion.options.find(opt => opt.answerId === answerId);
 
         if (option?.isCorrect) {
-            return "text-gray-600 border-green-500";
+            return "text-white relative overflow-hidden";
         } else if (selectedAnswer === answerId && !option?.isCorrect) {
-            return "text-gray-600 border-red-500";
+            return "text-gray-600";
         } else {
             return "text-gray-600 border-gray-100";
         }
@@ -293,16 +329,16 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
 
         if (option?.isCorrect) {
             return (
-                <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-200">
-                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-200" style={{backgroundColor: '#41C911'}}>
+                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20" stroke="currentColor" strokeWidth="2">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                 </div>
             );
         } else if (selectedAnswer === answerId && !option?.isCorrect) {
             return (
-                <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-200">
-                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-200" style={{backgroundColor: '#E05B00'}}>
+                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20" stroke="currentColor" strokeWidth="2">
                         <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                     </svg>
                 </div>
@@ -328,16 +364,14 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
         <div className="w-full h-full flex items-center justify-center px-12">
             <div className="relative w-full h-full">
                 {/* Stack Layer 2 - Middle */}
-                <div className={`absolute top-0 -bottom-5 left-8 right-8 rounded-3xl transform transition-all duration-700 ease-out`} style={{backgroundColor: '#2B2652'}}></div>
+                <div className={`absolute top-0 bottom-0 left-8 right-8 rounded-3xl`} style={{backgroundColor: '#2B2652'}}></div>
 
                 {/* Stack Layer 1 - Front */}
-                <div className={`absolute top-0 -bottom-3 left-4 right-4 rounded-3xl transform transition-all duration-700 ease-out`} style={{backgroundColor: '#535073'}}></div>
+                <div className={`absolute top-0 bottom-3 left-4 right-4 rounded-3xl`} style={{backgroundColor: '#535073'}}></div>
 
 
                 {/* Main Card - Active */}
-                <div className={`relative bg-white rounded-3xl shadow-2xl overflow-hidden transition-all duration-700 ease-out h-full ${
-                    isDrawingCard ? 'transform translate-y-0 scale-100 opacity-100' : 'transform translate-y-0 scale-100 opacity-100'
-                }`}>
+                <div className={`relative bg-white rounded-3xl shadow-2xl overflow-hidden h-[calc(100%-28px)]`}>
                     
                     {/* BattleSnow Protection Overlay */}
                     {isProtectedBySnow && (
@@ -399,11 +433,11 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
                             <div className={`mb-6 transition-all duration-500 ease-out delay-100 ${
                                 isDrawingCard ? 'opacity-0 transform translate-y-4' : 'opacity-100 transform translate-y-0'
                             }`}>
-                                <div className="bg-gray-50 rounded-xl p-3 border-2 border-gray-100 shadow-sm">
+                                <div className="bg-gray-50 rounded-3xl">
                                     <img
                                         src={currentQuestion.extraData.image}
                                         alt="Question illustration"
-                                        className="w-full h-auto max-h-40 sm:max-h-48 rounded-lg"
+                                        className="w-full h-auto rounded-3xl"
                                     />
                                 </div>
                             </div>
@@ -418,48 +452,61 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
                                 const isHidden = hiddenAnswers.includes(option.answerId);
                                 
                                 return (
-                                    <button
-                                        key={option.answerId}
-                                        onClick={() => !isHidden && handleAnswerSelect(option.answerId)}
-                                        disabled={showResult || isHidden}
-                                        className={`
-                                            w-full p-5 rounded-2xl border-2
-                                            flex items-center justify-between text-sm sm:text-base
-                                            ${isHidden 
-                                                ? 'bg-gray-50 text-gray-400 border-gray-100 cursor-not-allowed' 
-                                                : getAnswerButtonClass(option.answerId)
-                                            }
-                                            ${!showResult && !isHidden ? 'cursor-pointer' : 'cursor-default'}
-                                        `}
-                                        style={{
-                                            boxShadow: !showResult && !isHidden ? '0 4px 0 0 rgba(0, 0, 0, 0.05)' : undefined
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            if (!showResult && !isHidden) {
-                                                e.currentTarget.style.boxShadow = 'none';
-                                                e.currentTarget.style.transform = 'translateY(4px)';
-                                            }
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            if (!showResult && !isHidden) {
-                                                e.currentTarget.style.boxShadow = '0 4px 0 0 rgba(0, 0, 0, 0.05)';
-                                                e.currentTarget.style.transform = 'translateY(0px)';
-                                            }
-                                        }}
-                                    >
-                                        <span className="text-left flex-1 text-gray-600">
-                                            {isHidden ? (
-                                                <>
-                                                    <span className="text-gray-400 line-through">
-                                                        {answerLabel}. {option.text}
-                                                    </span>
-                                                </>
-                                            ) : (
-                                                `${answerLabel}. ${option.text}`
-                                            )}
-                                        </span>
-                                        {!isHidden && getAnswerIcon(option.answerId)}
-                                    </button>
+                                    <div key={option.answerId} className="relative">
+                                        {/* Animation overlay behind button */}
+                                        {showResult && option?.isCorrect && (
+                                            <div className="absolute w-full h-full animate-ping-overlay rounded-2xl z-0" style={{top: isCorrect ? '4px' : '0px', backgroundColor: '#41C911'}}></div>
+                                        )}
+                                        
+                                        <button
+                                            onClick={() => !isHidden && handleAnswerSelect(option.answerId)}
+                                            disabled={showResult || isHidden}
+                                            className={`
+                                                w-full p-5 rounded-2xl border-2
+                                                flex items-center justify-between text-sm sm:text-base
+                                                ${isHidden 
+                                                    ? 'bg-gray-50 text-gray-400 border-gray-100 cursor-not-allowed' 
+                                                    : getAnswerButtonClass(option.answerId)
+                                                }
+                                                ${!showResult && !isHidden ? 'cursor-pointer' : 'cursor-default'}
+                                            `}
+                                            style={{
+                                                backgroundColor: showResult && option?.isCorrect ? '#41C911' : undefined,
+                                                borderColor: showResult && option?.isCorrect ? '#41C911' : 
+                                                           showResult && selectedAnswer === option.answerId && !option?.isCorrect ? '#E05B00' : undefined,
+                                                boxShadow: !showResult && !isHidden ? '0 4px 0 0 rgba(0, 0, 0, 0.05)' : undefined
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                if (!showResult && !isHidden) {
+                                                    e.currentTarget.style.boxShadow = 'none';
+                                                    e.currentTarget.style.transform = 'translateY(4px)';
+                                                    // Play click sound on hover
+                                                    playClickSound();
+                                                }
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                if (!showResult && !isHidden) {
+                                                    e.currentTarget.style.boxShadow = '0 4px 0 0 rgba(0, 0, 0, 0.05)';
+                                                    e.currentTarget.style.transform = 'translateY(0px)';
+                                                }
+                                            }}
+                                        >
+                                            <span className={`text-left flex-1 ${
+                                                showResult && option?.isCorrect ? 'text-white' : 'text-gray-600'
+                                            }`}>
+                                                {isHidden ? (
+                                                    <>
+                                                        <span className="text-gray-400 line-through">
+                                                            {answerLabel}. {option.text}
+                                                        </span>
+                                                    </>
+                                                ) : (
+                                                    `${answerLabel}. ${option.text}`
+                                                )}
+                                            </span>
+                                            {!isHidden && getAnswerIcon(option.answerId)}
+                                        </button>
+                                    </div>
                                 );
                             })}
                         </div>
@@ -500,12 +547,29 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
                 isVisible={showToolEffect}
                 onAnimationComplete={hideToolEffect}
             />
+
             
             {/* CSS Animation Styles */}
             <style jsx>{`
                 @keyframes snowfall {
                     0%, 100% { opacity: 0.2; transform: translateY(-10px); }
                     50% { opacity: 0.4; transform: translateY(10px); }
+                }
+                
+                @keyframes ping-overlay {
+                    0% {
+                        transform: scaleX(1) scaleY(1.2);
+                        opacity: 0.5;
+                    }
+                    100% {
+                        transform: scaleX(1.2) scaleY(1.4);
+                        opacity: 0;
+                    }
+                }
+                
+                .animate-ping-overlay {
+                    animation: ping-overlay 800ms ease-out;
+                    will-change: transform, opacity;
                 }
             `}</style>
         </div>

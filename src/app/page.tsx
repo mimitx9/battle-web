@@ -1,7 +1,7 @@
 'use client';
 
 import React, {useEffect, useRef, useState} from 'react';
-import {RoomList, LoadingSpinner, CooldownOverlay, QuizCard, Leaderboard, HelpTool, RoomTransitionLoader} from '@/components/ui';
+import {RoomList, LoadingSpinner, CooldownOverlay, QuizCard, Leaderboard, HelpTool} from '@/components/ui';
 import {QuizCardRef} from '@/components/ui/QuizCard';
 import {useAuth} from '@/hooks/useAuth';
 import {useQuizBattle} from '../hooks/useQuizBattle';
@@ -259,10 +259,9 @@ const HomePage: React.FC = () => {
                 />
                 
                 {/* Room Transition Loader */}
-                <RoomTransitionLoader 
+                <CooldownOverlay 
                     isVisible={showRoomTransition}
                     onComplete={onRoomTransitionComplete}
-                    duration={3000}
                 />
                 
             </div>
@@ -272,7 +271,7 @@ const HomePage: React.FC = () => {
     // Nếu chưa đăng nhập, hiển thị form đăng nhập trực tiếp
     return (
         <LayoutContent>
-            <div className="min-h-screen pt-20" style={{backgroundColor: '#20203A'}}>
+            <div className="min-h-screen">
                 <HomeLoginForm onSuccess={() => {
                     // Form sẽ tự động xử lý sau khi đăng nhập thành công
                 }}/>

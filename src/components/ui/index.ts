@@ -15,13 +15,13 @@ export { default as FullScreenLoading } from './FullScreenLoading';
 export { default as NotificationSystem } from './NotificationSystem';
 export { default as RoomCard } from './RoomCard';
 export { default as RoomList } from './RoomList';
-export { default as RoomTransitionLoader } from './RoomTransitionLoader';
 export { default as CooldownOverlay } from './CooldownOverlay';
 export { default as QuizQuestion } from './QuizQuestion';
 export { default as QuizGame } from './QuizGame';
 export { default as QuizCard } from './QuizCard';
 export { default as Leaderboard } from './Leaderboard';
 export { default as HelpTool } from './HelpTool';
+export { default as FireLoading } from './FireLoading';
 
 // Re-export design tokens và utilities
 export * from '@/lib/design-tokens';

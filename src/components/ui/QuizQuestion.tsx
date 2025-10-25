@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Question } from '@/types';
+import { playClickSound, playCorrectSound, playWrongSound, playStartSound, startBackgroundMusic, stopBackgroundMusic, setBackgroundMusicVolume, isBackgroundMusicEnabled } from '@/lib/soundUtils';
 
 interface QuizQuestionProps {
     question: Question;
@@ -26,6 +27,9 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
     const [showResult, setShowResult] = useState(false);
     const [isCorrect, setIsCorrect] = useState(false);
     const [startTime, setStartTime] = useState<number>(Date.now());
+    const [isMusicPlaying, setIsMusicPlaying] = useState(false);
+    const [musicVolume, setMusicVolume] = useState(0.3);
+    const [showMusicPrompt, setShowMusicPrompt] = useState(false);
 
     // Reset state when question changes
     useEffect(() => {
@@ -34,6 +38,51 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
         setIsCorrect(false);
         setStartTime(Date.now());
     }, [question.questionId]);
+
+    // Start background music when component mounts
+    useEffect(() => {
+        // Add a small delay to ensure user interaction has occurred
+        const timer = setTimeout(() => {
+            if (isBackgroundMusicEnabled()) {
+                console.log('🎵 Starting background music...');
+                startBackgroundMusic();
+                setIsMusicPlaying(true);
+                // Show prompt if music doesn't start (autoplay blocked)
+                setTimeout(() => {
+                    if (!isMusicPlaying) {
+                        setShowMusicPrompt(true);
+                    }
+                }, 2000);
+            }
+        }, 100);
+        
+        // Cleanup: stop background music when component unmounts
+        return () => {
+            clearTimeout(timer);
+            stopBackgroundMusic();
+        };
+    }, []);
+
+    // Handle music volume changes
+    useEffect(() => {
+        setBackgroundMusicVolume(musicVolume);
+    }, [musicVolume]);
+
+    // Toggle background music
+    const toggleBackgroundMusic = () => {
+        console.log('🎵 Toggle background music clicked, current state:', isMusicPlaying);
+        setShowMusicPrompt(false); // Hide prompt when user interacts
+        
+        if (isMusicPlaying) {
+            stopBackgroundMusic();
+            setIsMusicPlaying(false);
+            console.log('🎵 Background music stopped');
+        } else {
+            startBackgroundMusic();
+            setIsMusicPlaying(true);
+            console.log('🎵 Background music started');
+        }
+    };
 
     const handleAnswerSelect = (answerId: number) => {
         if (showResult) return; // Prevent selection after showing result
@@ -50,11 +99,22 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
         setIsCorrect(correct);
         setShowResult(true);
         
+        // Play correct or wrong sound
+        if (correct) {
+            playCorrectSound();
+        } else {
+            playWrongSound();
+        }
+        
         // Call onAnswer callback with answer time
         onAnswer(question.questionId, answerId, correct, answerTime);
         
         // Auto move to next question after 2 seconds
         setTimeout(() => {
+            // Play start sound when wrong answer shows new quiz
+            if (!correct) {
+                playStartSound();
+            }
             onNext();
         }, 2000);
     };
@@ -147,6 +207,11 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
                                         }
                                         ${!showResult && !isHidden ? 'hover:shadow-md cursor-pointer' : 'cursor-default'}
                                     `}
+                                    onMouseEnter={() => {
+                                        if (!showResult && !isHidden) {
+                                            playClickSound();
+                                        }
+                                    }}
                                 >
                                     <span className="font-medium flex items-center">
                                         {isHidden ? (
@@ -202,7 +267,63 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
             </div>
 
             {/* Bottom Navigation Controls */}
-            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-4">
+            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-4 z-50">
+                {/* Music Toggle Button */}
+                <button 
+                    onClick={toggleBackgroundMusic}
+                    className={`w-14 h-14 rounded-full flex items-center justify-center shadow-xl transition-all duration-200 border-2 ${
+                        isMusicPlaying 
+                            ? 'bg-green-500 hover:bg-green-600 border-green-400' 
+                            : 'bg-red-500 hover:bg-red-600 border-red-400'
+                    }`}
+                    title={isMusicPlaying ? 'Tắt nhạc nền' : 'Bật nhạc nền'}
+                >
+                    {isMusicPlaying ? (
+                        <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.793L5.617 14H3a1 1 0 01-1-1V7a1 1 0 011-1h2.617l2.766-2.793a1 1 0 011.617.793zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clipRule="evenodd" />
+                        </svg>
+                    ) : (
+                        <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.793L5.617 14H3a1 1 0 01-1-1V7a1 1 0 011-1h2.617l2.766-2.793a1 1 0 011.617.793zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clipRule="evenodd" />
+                            <path d="M3.28 2.22a.75.75 0 00-1.06 1.06l14.5 14.5a.75.75 0 101.06-1.06L3.28 2.22z" />
+                        </svg>
+                    )}
+                </button>
+
+                {/* Music Prompt */}
+                {showMusicPrompt && (
+                    <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium animate-pulse">
+                        🎵 Nhấn nút âm thanh để bật nhạc nền
+                    </div>
+                )}
+
+                {/* Music Volume Control */}
+                <div className="flex items-center space-x-3 bg-black/30 backdrop-blur-sm rounded-full px-4 py-3 border border-white/20">
+                    <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.793L5.617 14H3a1 1 0 01-1-1V7a1 1 0 011-1h2.617l2.766-2.793a1 1 0 011.617.793z" clipRule="evenodd" />
+                    </svg>
+                    <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.1"
+                        value={musicVolume}
+                        onChange={(e) => {
+                            const newVolume = parseFloat(e.target.value);
+                            setMusicVolume(newVolume);
+                            console.log('🎵 Volume changed to:', newVolume);
+                        }}
+                        className="w-20 h-3 bg-white/30 rounded-lg appearance-none cursor-pointer slider"
+                        style={{
+                            background: `linear-gradient(to right, #4ade80 0%, #4ade80 ${musicVolume * 100}%, #ffffff30 ${musicVolume * 100}%, #ffffff30 100%)`
+                        }}
+                        title={`Âm lượng: ${Math.round(musicVolume * 100)}%`}
+                    />
+                    <span className="text-white text-sm font-medium min-w-[3rem]">
+                        {Math.round(musicVolume * 100)}%
+                    </span>
+                </div>
+
                 <button className="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center shadow-lg hover:bg-yellow-600 transition-colors">
                     <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />

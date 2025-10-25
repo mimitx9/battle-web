@@ -189,11 +189,28 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
                 );
             default:
                 return (
-                    <div className="w-6 h-6 bg-gray-600 rounded-full flex items-center justify-center">
-                        <span className="text-white font-bold text-xs">{rank}</span>
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center">
+                        <span className="text-white font-medium text-xs">{rank}</span>
                     </div>
                 );
         }
+    };
+
+    const getDefaultAvatar = (fullName: string) => {
+        const firstLetter = fullName?.charAt(0)?.toUpperCase() || '?';
+        const colors = [
+            'bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 
+            'bg-purple-500', 'bg-pink-500', 'bg-indigo-500', 'bg-teal-500',
+            'bg-orange-500', 'bg-cyan-500', 'bg-lime-500', 'bg-amber-500'
+        ];
+        const colorIndex = fullName?.length % colors.length || 0;
+        const selectedColor = colors[colorIndex];
+        
+        return (
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${selectedColor} flex-shrink-0`}>
+                <span className="text-white font-bold text-sm">{firstLetter}</span>
+            </div>
+        );
     };
 
     // Loading state
@@ -209,7 +226,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
                 <div className="flex items-center justify-center h-32">
                     <div className="text-center">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400 mx-auto mb-3"></div>
-                        <p className="text-sm text-gray-300">Đang tải bảng xếp hạng...</p>
+                        <p className="text-sm text-gray-300">Chờ tí...</p>
                     </div>
                 </div>
             </div>
@@ -232,46 +249,45 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
                             key={ranking.userId}
                             className={`flex items-center justify-between p-4 rounded-l-2xl transition-all duration-300 ${
                                 ranking.rank === 1
-                                    ? `bg-gradient-to-r from-[#ffc107]/40 to-[#FFD66D]/0 hover:opacity-90 ${isCurrentUser ? 'min-w-sm' : 'max-w-xs ml-auto'}`
+                                    ? `bg-gradient-to-r from-[#ffc107]/40 to-[#FFD66D]/0 hover:opacity-80 hover:cursor-pointer ${isCurrentUser ? 'min-w-xs w-[345px]' : 'max-w-xs ml-auto'}`
                                     : ranking.rank === 2
-                                        ? `bg-gradient-to-r from-[#FF59EE]/60 to-[#7622FF]/0 hover:opacity-90 ${isCurrentUser ? 'min-w-sm' : 'max-w-xs ml-auto'}`
+                                        ? `bg-gradient-to-r from-[#FF59EE]/60 to-[#7622FF]/0 hover:opacity-80 hover:cursor-pointer ${isCurrentUser ? 'min-w-xs w-[345px]' : 'max-w-xs ml-auto'}`
                                         : ranking.rank === 3
-                                            ? `bg-gradient-to-r from-[#66E7FF]/60 to-[#66E7FF]/0 hover:opacity-90 ${isCurrentUser ? 'min-w-sm' : 'max-w-xs ml-auto'}`
+                                            ? `bg-gradient-to-r from-[#66E7FF]/60 to-[#66E7FF]/0 hover:opacity-80 hover:cursor-pointer ${isCurrentUser ? 'min-w-xs w-[345px]' : 'max-w-xs ml-auto'}`
                                             : isCurrentUser
-                                                ? 'bg-white/10 hover:bg-white/5 min-w-sm' : 'max-w-xs ml-auto'
+                                                ? 'bg-white/10 hover:bg-white/5 min-w-sm w-[345px] hover:cursor-pointer' : 'max-w-xs ml-auto hover:cursor-pointer hover:opacity-80'
                                                 // : ranking.isActive ? 'bg-green-900/20 hover:bg-green-900/30' : 'bg-gray-700/50 hover:bg-gray-700/70'
                             }`}
                     >
                         <div className="flex items-center space-x-5">
                             {getRankIcon(ranking.rank)}
                             {/* Avatar */}
-                            {ranking.avatar && (
+                            {ranking.avatar ? (
                                 <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-white">
                                     <img 
                                         src={ranking.avatar} 
                                         alt={ranking.fullName}
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-fill"
                                         onError={(e) => {
                                             e.currentTarget.style.display = 'none';
                                         }}
                                     />
                                 </div>
+                            ) : (
+                                getDefaultAvatar(ranking.fullName)
                             )}
                             <div>
-                                <div className="font-medium text-xs mb-1.5 text-white flex items-center">
+                                <div 
+                                    className="font-medium text-xs mb-1.5 text-white truncate max-w-[100px]"
+                                    style={{
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis'
+                                    }}
+                                >
                                     {ranking.fullName}
-                                    {/* {isCurrentUser && (
-                                        <span className="ml-2 text-xs bg-blue-500 text-white px-2 py-1 rounded-full">
-                                            Bạn
-                                        </span>
-                                    )} */}
                                 </div>
                                 <div className="text-xs text-gray-300 flex items-center space-x-2">
-                                    {/* {showStreak && (
-                                        <span className="flex items-center">
-                                            🔥 {ranking.streakCount}
-                                        </span>
-                                    )} */}
                                     <span className="flex items-start space-x-1">
                                         <img 
                                             src="/logos/battle.svg" 

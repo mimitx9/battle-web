@@ -23,6 +23,7 @@ export interface User {
         battleBlockTop1?: number;
         battleBlockBehind?: number;
     };
+    globalRank?: GlobalRank; // User's ranking information
     createdAt?: string;
     updatedAt?: string;
 }

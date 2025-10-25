@@ -1,13 +1,15 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import LayoutContent from '@/components/layout/LayoutContent';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserRanking } from '@/hooks/useUserRanking';
 
 const AccountPage: React.FC = () => {
   const { user, logout } = useAuth();
+  const { globalRank, loading: rankingLoading, fetchUserRanking } = useUserRanking();
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -26,6 +28,13 @@ const AccountPage: React.FC = () => {
   const handleReportError = () => {
     window.open('https://m.me/appfaquiz?ref=battle', '_blank');
   };
+
+  // Fetch user ranking when component mounts
+  useEffect(() => {
+    if (user) {
+      fetchUserRanking();
+    }
+  }, [user, fetchUserRanking]);
 
   if (!user) {
     return (
@@ -51,74 +60,67 @@ const AccountPage: React.FC = () => {
         <div className="max-w-3xl mx-auto px-4 pt-20">
           {/* User Profile Card */}
           <div 
-            className="bg-white bg-opacity-10 rounded-2xl p-6 mb-8"
+            className="bg-white bg-opacity-10 rounded-3xl px-10 py-8 mb-8"
             style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
           >
             <div className="flex items-center justify-between">
               {/* Left side - User Info */}
               <div className="flex-1">
                 <h2 className="text-white text-2xl font-bold mb-2">
-                  {user.fullName || user.username || 'Người dùng'}
+                  {user.fullName || user.username || 'FA Battle'}
                 </h2>
-                <p className="text-white text-sm mb-1">
+                <p className="text-white text-sm my-2 opacity-30">
                   {user.email || 'user@example.com'}
                 </p>
-                <p className="text-white text-sm mb-4">
+                <p className="text-white text-sm mb-6 opacity-30">
                   {user.university || 'Đại học Y Hà Nội'}
                 </p>
                 <button
                   onClick={handleLogout}
-                  className="text-orange-400 hover:text-orange-300 font-medium"
-                  style={{ color: '#FFBA08' }}
+                  className="text-yellow-400 hover:text-yellow-300 font-medium text-sm"
                 >
                   Đăng xuất
                 </button>
               </div>
 
               {/* Right side - Avatar and Level */}
-              <div className="flex flex-col items-center">
-                <div className="w-24 h-24 rounded-full bg-gray-600 flex items-center justify-center mb-3">
-                  {user.avatar ? (
+              <div className="flex flex-col items-center relative">
+                {/* Avatar with gradient ring */}
+                <div className="w-28 h-28 rounded-full bg-white/10 p-2 mb-3 relative">
+                  <div className="w-full h-full rounded-full  bg-gradient-to-t from-transparent to-white flex items-center justify-center overflow-hidden">
+                    {user.avatar ? (
+                      <img 
+                        src={user.avatar} 
+                        alt={user.fullName || user.username}
+                        className="w-full h-full rounded-full object-fill"
+                      />
+                    ) : (
+                      <div className="w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center">
+                        <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                  
+                {/* Star icon positioned at bottom center of avatar */}
+                {globalRank?.url && (
+                  <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2">
                     <img 
-                      src={user.avatar} 
-                      alt={user.fullName || user.username}
-                      className="w-full h-full rounded-full object-cover"
+                      src={globalRank.url} 
+                      alt="Ranking Icon" 
+                      className="w-8 h-8"
                     />
-                  ) : (
-                    <div className="w-16 h-16 bg-gray-400 rounded-full flex items-center justify-center">
-                      <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                  )}
+                  </div>
+                )}
                 </div>
+                
                 
                 {/* Level Info */}
-                <div className="flex items-center space-x-1 mb-2">
-                  <img 
-                    src="/logos/header/fire.svg" 
-                    alt="Star" 
-                    className="w-4 h-4"
-                  />
-                  <span className="text-white text-sm font-medium">
-                    Lv 10. Vàng V
+                <div className="flex items-center my-2">
+                  <span className="text-white text-xs font-medium">
+                    {globalRank?.title || '--. ---'}
                   </span>
-                </div>
-                
-                {/* Progress Bar */}
-                <div className="w-32 h-2 bg-purple-600 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-yellow-400 rounded-full"
-                    style={{ width: '62.5%' }}
-                  ></div>
-                </div>
-                <div className="flex items-center justify-between w-32 mt-1">
-                  <span className="text-white text-xs">250/400</span>
-                  <img 
-                    src="/logos/header/key.svg" 
-                    alt="Diamond" 
-                    className="w-3 h-3"
-                  />
                 </div>
               </div>
             </div>
@@ -129,43 +131,40 @@ const AccountPage: React.FC = () => {
             {/* Mua key */}
             <button
               onClick={() => router.push('/shop')}
-              className="bg-white bg-opacity-10 rounded-xl p-6 flex flex-col items-center space-y-3 hover:bg-opacity-20 transition-all"
-              style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
+              className="bg-white bg-opacity-10 rounded-3xl px-8 py-4 flex flex-col items-start space-y-2 hover:bg-opacity-5 duration-500 transition-all"
             >
               <img 
-                src="/logos/account/buy-key.svg" 
+                src="/logos/account/buy-key.png" 
                 alt="Mua key" 
-                className="w-12 h-12"
+                className="w-auto h-20"
               />
-              <span className="text-white font-medium">Mua key</span>
+              <span className="text-white text-sm font-medium">Mua key</span>
             </button>
 
             {/* Liên hệ */}
             <button
               onClick={handleContact}
-              className="bg-white bg-opacity-10 rounded-xl p-6 flex flex-col items-center space-y-3 hover:bg-opacity-20 transition-all"
-              style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
+              className="bg-white bg-opacity-10 rounded-3xl px-8 py-4 flex flex-col items-start space-y-2 hover:bg-opacity-5 duration-500 transition-all"
             >
               <img 
-                src="/logos/account/messenger.svg" 
+                src="/logos/account/messenger.png" 
                 alt="Liên hệ" 
-                className="w-12 h-12"
+                className="w-auto h-20"
               />
-              <span className="text-white font-medium">Liên hệ</span>
+              <span className="text-white text-sm font-medium">Liên hệ</span>
             </button>
 
             {/* Báo lỗi */}
             <button
               onClick={handleReportError}
-              className="bg-white bg-opacity-10 rounded-xl p-6 flex flex-col items-center space-y-3 hover:bg-opacity-20 transition-all"
-              style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
+              className="bg-white bg-opacity-10 rounded-3xl px-8 py-4 flex flex-col items-start space-y-2 hover:bg-opacity-5 duration-500 transition-all"
             >
               <img 
-                src="/logos/account/error.svg" 
+                src="/logos/account/error.png" 
                 alt="Báo lỗi" 
-                className="w-12 h-12"
+                className="w-auto h-20"
               />
-              <span className="text-white font-medium">Báo lỗi</span>
+              <span className="text-white text-sm font-medium">Báo lỗi</span>
             </button>
           </div>
         </div>

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { QuizRoom, RankingEntry, SubmitAnswerMessage, AnswerSubmittedMessage } from '@/types';
 import { quizBattleApiService } from '@/lib/api';
 import { useWebSocketPing } from './useWebSocketPing';
+import { playStartSound } from '@/lib/soundUtils';
 
 interface Notification {
     id: string;
@@ -57,6 +58,7 @@ export const useQuizBattle = (onScoreChange?: (scoreChange: number) => void): Us
     const [showRoomTransition, setShowRoomTransition] = useState(false);
     const [quizQuestions, setQuizQuestions] = useState<any[] | null>(null);
     const [rankings, setRankings] = useState<RankingEntry[]>([]);
+    const [isFirstRoomEntry, setIsFirstRoomEntry] = useState(true); // Track if this is first room entry
 
     // Helper function to add notifications
     const addNotification = useCallback((type: Notification['type'], message: string) => {
@@ -419,14 +421,24 @@ export const useQuizBattle = (onScoreChange?: (scoreChange: number) => void): Us
                 setCurrentRoom(room);
                 addNotification('success', `Đã tham gia room ${room.categoryTitle}`);
                 
+                // Play start sound only on first room entry
+                if (isFirstRoomEntry) {
+                    console.log('🔍 First room entry - playing start sound');
+                    playStartSound();
+                    setIsFirstRoomEntry(false);
+                }
+                
                 // Connect to room WebSocket using ref
                 if (connectRoomWebSocketRef.current) {
                     console.log('🔍 Connecting to new room WebSocket...');
                     connectRoomWebSocketRef.current(roomCode);
                 }
                 
-                // Hiển thị cooldown overlay
-                setShowCooldown(true);
+                // Hiển thị cooldown overlay chỉ khi không chuyển room
+                // (room transition sẽ được xử lý riêng)
+                if (!currentRoom || currentRoom.roomCode === roomCode) {
+                    setShowCooldown(true);
+                }
                 
                 // Gọi API get quiz by category ngay lập tức
                 try {
@@ -511,6 +523,7 @@ export const useQuizBattle = (onScoreChange?: (scoreChange: number) => void): Us
             setRoomWsConnected(false);
             
             setCurrentRoom(null);
+            setIsFirstRoomEntry(true); // Reset for next room entry
             addNotification('info', 'Đã rời khỏi room');
             
         } catch (error: any) {
