@@ -128,18 +128,21 @@ const HelpTool: React.FC<HelpToolProps> = ({ className = '', userBag, onToolUsed
                 </svg>
             );
         } else if (type === 'blockTop1' && isOwned) {
-            gradient = 'linear-gradient(to top, #250000, #E05B00)';
+            gradient = 'linear-gradient(to top,rgb(37, 0, 15),rgb(227, 32, 182))';
             title = 'Chặn điểm Top 1';
             icon = (
-                <svg width="20" height="20" viewBox="0 0 73 73" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="36.5" cy="36.5" r="31.5" stroke="white" strokeWidth="10"/>
+                <svg width="24" height="24" viewBox="0 0 73 73" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="36.5" cy="36.5" r="31.5" stroke="white" stroke-width="10"/>
+                    <rect x="56.8262" y="10.103" width="10" height="61.6951" transform="rotate(45 56.8262 10.103)" fill="white"/>
+                    <path d="M42.2939 47.707C42.9239 47.0773 44.0009 47.5233 44.001 48.4141V53C44.001 54.6568 42.6578 55.9999 41.001 56H36.415C35.5242 56 35.0781 54.9229 35.708 54.293L42.2939 47.707ZM41.001 15C42.6578 15.0001 44.001 16.3432 44.001 18V33.7324C44.0008 35.3891 42.6577 36.7324 41.001 36.7324H37.001C35.3442 36.7324 34.0011 35.3891 34.001 33.7324V27.3418L29.2002 27.3223C26.5337 27.3109 25.2063 24.0867 27.0918 22.2012L34.001 15.292V15H41.001Z" fill="white"/>
                 </svg>
+
             );
         } else if (type === 'blockBehind' && isOwned) {
-            gradient = 'linear-gradient(to top,#250000, #DC00E0)';
+            gradient = 'linear-gradient(to top, rgb(17, 35, 2),rgb(118, 220, 30))';
             title = 'Chặn điểm phía sau';
             icon = (
-                <svg width="20" height="20" viewBox="0 0 73 73" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg width="22" height="22" viewBox="0 0 73 73" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <circle cx="36.5" cy="36.5" r="31.5" stroke="white" strokeWidth="10"/>
                 </svg>
             );
