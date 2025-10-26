@@ -96,6 +96,7 @@ export const colors = {
 export const typography = {
   fontFamily: {
     sans: ['Inter', 'system-ui', 'sans-serif'],
+    baloo: ['Baloo', 'sans-serif'],
     mono: ['JetBrains Mono', 'monospace'],
   },
   

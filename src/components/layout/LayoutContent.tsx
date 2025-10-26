@@ -1,8 +1,10 @@
 'use client';
 
 import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 import Header from "@/components/layout/Header";
 import ClientOnly from "@/components/common/ClientOnly";
+import { useUserBag } from "@/hooks/useUserBag";
 
 interface LayoutContentProps {
     children: React.ReactNode;
@@ -10,6 +12,12 @@ interface LayoutContentProps {
 
 export default function LayoutContent({ children }: LayoutContentProps) {
     const pathname = usePathname();
+    const { userBag, fetchUserBag } = useUserBag();
+
+    // Fetch userBag khi component mount
+    useEffect(() => {
+        fetchUserBag();
+    }, [fetchUserBag]);
 
     // Không hiển thị Header/Footer cho exam pages, waiting-room và hầu hết quiz pages
     // Ngoại lệ: lịch sử quiz cần hiển thị top bar
@@ -28,7 +36,7 @@ export default function LayoutContent({ children }: LayoutContentProps) {
 
     return (
         <div className="min-h-screen flex flex-col">
-            <Header />
+            <Header userBag={userBag} />
             <main className="flex-1">
                 {children}
             </main>

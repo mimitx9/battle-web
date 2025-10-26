@@ -15,6 +15,7 @@ const ONE_DAY_MS = 24 * 60 * 60 * 1000; // 24 giờ tính bằng milliseconds
 export const useFirePoints = () => {
   const [firePoints, setFirePoints] = useState<number>(0);
   const [isOnline, setIsOnline] = useState<boolean>(true);
+  const [isClient, setIsClient] = useState<boolean>(false);
 
 
   // Tính toán đốm lửa dựa trên thời gian
@@ -119,13 +120,22 @@ export const useFirePoints = () => {
     setFirePoints(0);
   }, []);
 
-  // Khởi tạo đốm lửa khi component mount
+  // Đảm bảo chỉ chạy trên client để tránh hydration mismatch
   useEffect(() => {
-    updateFirePoints();
-  }, [updateFirePoints]);
+    setIsClient(true);
+  }, []);
 
-  // Thiết lập timer để cập nhật đốm lửa mỗi phút
+  // Khởi tạo đốm lửa khi component mount (chỉ trên client)
   useEffect(() => {
+    if (isClient) {
+      updateFirePoints();
+    }
+  }, [isClient, updateFirePoints]);
+
+  // Thiết lập timer để cập nhật đốm lửa mỗi phút (chỉ trên client)
+  useEffect(() => {
+    if (!isClient) return;
+    
     console.log('🔥 Setting up timer, isOnline:', isOnline);
     
     const interval = setInterval(() => {
@@ -139,10 +149,12 @@ export const useFirePoints = () => {
       console.log('🔥 Clearing timer');
       clearInterval(interval);
     };
-  }, [isOnline, updateFirePoints]);
+  }, [isClient, isOnline, updateFirePoints]);
 
-  // Theo dõi trạng thái online/offline
+  // Theo dõi trạng thái online/offline (chỉ trên client)
   useEffect(() => {
+    if (!isClient) return;
+    
     const handleOnline = () => {
       setIsOnline(true);
       updateFirePoints(); // Cập nhật ngay khi online
@@ -162,10 +174,12 @@ export const useFirePoints = () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, [updateFirePoints]);
+  }, [isClient, updateFirePoints]);
 
-  // Theo dõi các sự kiện tương tác của user để cập nhật lastActiveTime
+  // Theo dõi các sự kiện tương tác của user để cập nhật lastActiveTime (chỉ trên client)
   useEffect(() => {
+    if (!isClient) return;
+    
     const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
     
     const handleUserActivity = () => {
@@ -181,10 +195,12 @@ export const useFirePoints = () => {
         document.removeEventListener(event, handleUserActivity, true);
       });
     };
-  }, [updateLastActiveTime]);
+  }, [isClient, updateLastActiveTime]);
 
-  // Theo dõi sự kiện beforeunload để lưu dữ liệu cuối cùng
+  // Theo dõi sự kiện beforeunload để lưu dữ liệu cuối cùng (chỉ trên client)
   useEffect(() => {
+    if (!isClient) return;
+    
     const handleBeforeUnload = () => {
       updateLastActiveTime();
     };
@@ -194,7 +210,7 @@ export const useFirePoints = () => {
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [updateLastActiveTime]);
+  }, [isClient, updateLastActiveTime]);
 
   return {
     firePoints,

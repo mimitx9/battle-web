@@ -23,28 +23,38 @@ const FireLoading: React.FC<FireLoadingProps> = ({
   // Chỉ hiển thị vòng tròn loading khi có firePoints
   const shouldShowProgress = firePoints > 0;
 
-  const sizeClasses = {
-    sm: 'w-8 h-8',
-    md: 'w-12 h-12', 
-    lg: 'w-16 h-16'
+  // Ensure consistent className generation to prevent hydration mismatch
+  const getSizeClasses = (size: 'sm' | 'md' | 'lg') => {
+    switch (size) {
+      case 'sm': return 'w-8 h-8';
+      case 'md': return 'w-12 h-12';
+      case 'lg': return 'w-16 h-16';
+      default: return 'w-12 h-12';
+    }
   };
 
-  const iconSizes = {
-    sm: 'w-4 h-4',
-    md: 'w-6 h-6',
-    lg: 'w-8 h-8'
+  const getIconSizes = (size: 'sm' | 'md' | 'lg') => {
+    switch (size) {
+      case 'sm': return 'w-4 h-4';
+      case 'md': return 'w-6 h-6';
+      case 'lg': return 'w-8 h-8';
+      default: return 'w-6 h-6';
+    }
   };
 
-  const textSizes = {
-    sm: 'text-sm',
-    md: 'text-lg',
-    lg: 'text-xl'
+  const getTextSizes = (size: 'sm' | 'md' | 'lg') => {
+    switch (size) {
+      case 'sm': return 'text-sm';
+      case 'md': return 'text-lg';
+      case 'lg': return 'text-xl';
+      default: return 'text-lg';
+    }
   };
 
   return (
-    <div className="flex items-center space-x-1">
+    <div className={`flex items-center ${shouldShowProgress ? 'space-x-2' : 'space-x-1'}`}>
       {/* Fire icon with circular progress */}
-      <div className={`relative ${sizeClasses[size]}`}>
+      <div className={`relative ${getSizeClasses(size)}`}>
         {/* Background circle - chỉ hiển thị khi có firePoints */}
         {shouldShowProgress && (
           <svg 
@@ -83,7 +93,7 @@ const FireLoading: React.FC<FireLoadingProps> = ({
           <img 
             src="/logos/header/fire.svg" 
             alt="Fire" 
-            className={shouldShowProgress ? `${iconSizes[size]}` : "w-6 h-6"}
+            className={shouldShowProgress ? getIconSizes(size) : "w-6 h-6"}
           />
         </div>
       </div>

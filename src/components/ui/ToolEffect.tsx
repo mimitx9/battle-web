@@ -144,7 +144,7 @@ const ToolEffect: React.FC<ToolEffectProps> = ({ toolType, isVisible, onAnimatio
                     className="relative w-32 h-32 rounded-full flex items-center justify-center shadow-2xl animate-pulse-custom"
                     style={{
                         background: toolInfo.gradient,
-                        boxShadow: `inset 0 -15px 15px rgba(255,255,255,0.5) `
+                        boxShadow: `inset 0 -5px 15px rgba(255,255,255,0.5) `
                     }}
                 >
                     {/* Icon */}

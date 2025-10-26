@@ -6,6 +6,9 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        'baloo': ['Baloo', 'sans-serif'],
+      },
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",

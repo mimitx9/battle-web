@@ -12,7 +12,7 @@ class SoundManager {
   private sounds: Map<string, HTMLAudioElement> = new Map();
   private isEnabled: boolean = true;
   private backgroundMusic: HTMLAudioElement | null = null;
-  private backgroundMusicEnabled: boolean = true;
+  private backgroundMusicEnabled: boolean = false;
 
   constructor() {
     // Initialize sounds

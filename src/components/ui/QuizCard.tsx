@@ -525,10 +525,10 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
                                  style={{
                                      textShadow: `0 2px 2px ${isCorrect ? 'rgba(255, 238, 0, 0.5)' : 'rgba(255, 100, 100, 0.25)'}`,
                                      filter: `drop-shadow(0 5px 0 ${isCorrect ? '#E05B00' : 'rgb(171, 34, 85)'}) drop-shadow(0 6px 8px rgba(0,0,0,0.5))`,
-                                     fontFamily: 'Arial Black, sans-serif',
+                                     fontFamily: 'Baloo, sans-serif',
                                      fontWeight: '900',
                                      letterSpacing: '1px',
-                                     WebkitTextStroke: `0.5px ${isCorrect ? '#FFE46D' : 'rgba(255, 255, 255, 0.4)'}`,
+                                     WebkitTextStroke: `0.01px ${isCorrect ? '#FFE46D' : 'rgba(255, 255, 255, 0.2)'}`,
                                      WebkitTextFillColor: 'transparent',
                                      background: `linear-gradient(to bottom, ${isCorrect ? '#FFD410' : '#F71873' } 0%, ${isCorrect ? '#E05B00' : '#FF9B4C'} 100%)`,
                                      WebkitBackgroundClip: 'text',
