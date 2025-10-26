@@ -491,7 +491,7 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
                                                 }
                                             }}
                                         >
-                                            <span className={`text-left flex-1 ${
+                                            <span className={`text-left flex-1 font-sans ${
                                                 showResult && option?.isCorrect ? 'text-white' : 'text-gray-600'
                                             }`}>
                                                 {isHidden ? (

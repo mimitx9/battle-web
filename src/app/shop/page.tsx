@@ -28,7 +28,7 @@ const ShopPage: React.FC = () => {
     {
       id: 1,
       icon: 'hint',
-      title: 'GỢI Ý ĐÁP ÁN',
+      title: 'GỢI Ý 50/50',
       description: '5 lượt',
       price: 5,
       gradient: 'linear-gradient(to top, #FF8C00, #FFD406)'

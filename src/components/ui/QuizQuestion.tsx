@@ -213,7 +213,7 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
                                         }
                                     }}
                                 >
-                                    <span className="font-medium flex items-center">
+                                    <span className="font-medium flex items-center font-sans">
                                         {isHidden ? (
                                             <>
                                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2">
