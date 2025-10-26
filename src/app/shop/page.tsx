@@ -64,16 +64,16 @@ const ShopPage: React.FC = () => {
           >
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <h2 className="text-4xl font-bold text-white mb-4">
+                  <h2 className="text-4xl text-white mb-4" style={{ fontFamily: 'Baloo' }}>
                     x2 key khi mua lần đầu
                   </h2>
-                <div className="text-2xl font-bold text-white mb-16">
+                <div className="text-2xl text-white mb-16" style={{ fontFamily: 'Baloo' }}>
                   <span className="text-yellow-400">100k ~ </span>
                   <span className="line-through text-yellow-400 opacity-20">400</span>
                   <span className="text-yellow-400 ml-3">200 key</span>
                   </div>
 
-                <div className="text-white/50 text-2xl font-bold">
+                <div className="text-white/50 text-2xl" style={{ fontFamily: 'Baloo' }}>
                     Còn {formatTime(timeLeft)} phút
                   </div>
               </div>
@@ -134,12 +134,12 @@ const ShopPage: React.FC = () => {
                     </div>
                 
                 {/* Title */}
-                <h3 className="text-2xl font-bold text-white mt-12 mb-4 uppercase tracking-wider">
+                <h3 className="text-2xl text-white mt-12 mb-4 uppercase tracking-wider" style={{ fontFamily: 'Baloo' }}>
                       {item.title}
                     </h3>
                 
                 {/* Usage Count */}
-                <p className="text-2xl text-white/50 font-bold">
+                <p className="text-2xl text-white/50" style={{ fontFamily: 'Baloo' }}>
                       {item.description}
                     </p>
                 
@@ -170,7 +170,7 @@ const ShopPage: React.FC = () => {
                   boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
                 }}
               >
-                <div className="text-[#96FF00] font-semibold text-xl flex-1 px-2">
+                <div className="text-[#96FF00] text-xl flex-1 px-2" style={{ fontFamily: 'Baloo' }}>
                   Mua thành công! Vô tài khoản coi số lượt nha
                 </div>
                 <button 

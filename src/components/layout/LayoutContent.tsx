@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import Header from "@/components/layout/Header";
 import ClientOnly from "@/components/common/ClientOnly";
 import { useUserBag } from "@/hooks/useUserBag";
+import { useAuth } from "@/hooks/useAuth";
 
 interface LayoutContentProps {
     children: React.ReactNode;
@@ -12,12 +13,15 @@ interface LayoutContentProps {
 
 export default function LayoutContent({ children }: LayoutContentProps) {
     const pathname = usePathname();
+    const { user, isInitialized } = useAuth();
     const { userBag, fetchUserBag } = useUserBag();
 
-    // Fetch userBag khi component mount
+    // Fetch userBag chỉ khi user đã đăng nhập
     useEffect(() => {
-        fetchUserBag();
-    }, [fetchUserBag]);
+        if (isInitialized && user) {
+            fetchUserBag();
+        }
+    }, [isInitialized, user, fetchUserBag]);
 
     // Không hiển thị Header/Footer cho exam pages, waiting-room và hầu hết quiz pages
     // Ngoại lệ: lịch sử quiz cần hiển thị top bar

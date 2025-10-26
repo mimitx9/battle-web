@@ -174,15 +174,15 @@ const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Right side - Gift, Shop, Avatar icons and Login/User actions */}
-      <div className="flex items-center justify-end space-x-8 w-1/3">
+      <div className="flex items-center justify-end space-x-6 w-1/3">
         
         {/* Gift icon with tooltip */}
-        <div className="relative group">
-          <Link href="/gift" className="cursor-pointer opacity-50 hover:opacity-100 transition-opacity">
+        <div className="relative group flex items-center">
+          <Link href="/gift" className="cursor-pointer opacity-50 hover:opacity-100 transition-opacity flex items-center">
             <img 
               src="/logos/header/Gift.svg" 
               alt="Gift" 
-              className="w-7 h-7"
+              className="w-8 h-8"
             />
           </Link>
           {/* Tooltip */}
@@ -195,8 +195,8 @@ const Header: React.FC<HeaderProps> = ({
         </div>
         
         {/* Shop icon with tooltip */}
-        <div className="relative group">
-          <Link href="/shop" className="cursor-pointer  opacity-50 hover:opacity-100 transition-opacity">
+        <div className="relative group flex items-center">
+          <Link href="/shop" className="cursor-pointer opacity-50 hover:opacity-100 transition-opacity flex items-center">
             <img 
               src="/logos/header/Shop.svg" 
               alt="Shop" 
@@ -213,8 +213,8 @@ const Header: React.FC<HeaderProps> = ({
         </div>
         
         {/* Avatar with dropdown menu */}
-        <div className="relative group">
-          <button className="cursor-pointer transition-opacity bg-gradient-to-t from-transparent to-white rounded-full">
+        <div className="relative group flex items-center">
+          <button className="cursor-pointer transition-opacity bg-gradient-to-t from-transparent to-white rounded-full flex items-center">
             {user && user.avatar ? (
               <img 
                 src={user.avatar} 
@@ -290,7 +290,7 @@ const Header: React.FC<HeaderProps> = ({
                 onClick={handleLogout}
                 className="flex items-center w-full px-4 py-2 text-white  opacity-50 hover:opacity-100 transition-all duration-200"
               >
-                <span className="font-medium text-sm">Đăng xuất</span>
+                <span className="font-medium text-sm font-sans">Đăng xuất</span>
               </button>
             </div>
           </div>
