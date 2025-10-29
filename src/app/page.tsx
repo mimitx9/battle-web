@@ -9,6 +9,7 @@ import {useUserBag} from '@/hooks/useUserBag';
 import HomeLoginForm from '@/components/ui/HomeLoginForm';
 import LayoutContent from '@/components/layout/LayoutContent';
 import Header from '@/components/layout/Header';
+import MobileBanner from '@/components/ui/MobileBanner';
 
 const HomePage: React.FC = () => {
     const {user, isInitialized} = useAuth();
@@ -268,6 +269,7 @@ const HomePage: React.FC = () => {
     if (isInitialized && user) {
         return (
             <div className="h-screen flex flex-col">
+                <MobileBanner />
                 <Header 
                     currentRoom={currentRoom}
                     wsConnected={wsConnected}
