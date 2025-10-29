@@ -91,6 +91,7 @@ export const useQuizBattle = (onScoreChange?: (scoreChange: number) => void): Us
     const globalWsRef = useRef<WebSocket | null>(null);
     const roomWsRef = useRef<WebSocket | null>(null);
     const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const lastConnectionAttemptRef = useRef<number>(0);
     
     // WebSocket ping mechanisms - TẮT để chỉ read-only
     const globalPing = useWebSocketPing({ 
@@ -216,7 +217,18 @@ export const useQuizBattle = (onScoreChange?: (scoreChange: number) => void): Us
             };
 
             ws.onerror = (error) => {
-                console.error('❌ Room WebSocket error:', error);
+                // WebSocket error event không chứa thông tin chi tiết trong object error
+                // Log thông tin hữu ích để debug
+                console.error('❌ Room WebSocket error:', {
+                    readyState: ws.readyState,
+                    readyStateText: ws.readyState === WebSocket.CONNECTING ? 'CONNECTING' 
+                        : ws.readyState === WebSocket.OPEN ? 'OPEN'
+                        : ws.readyState === WebSocket.CLOSING ? 'CLOSING'
+                        : ws.readyState === WebSocket.CLOSED ? 'CLOSED' : 'UNKNOWN',
+                    url: wsUrl,
+                    roomCode: roomCode,
+                    timestamp: new Date().toISOString()
+                });
                 setRoomWsConnected(false);
             };
 
@@ -273,6 +285,58 @@ export const useQuizBattle = (onScoreChange?: (scoreChange: number) => void): Us
         if (!token) {
             console.log('❌ No auth token found, cannot connect to WebSocket');
             return;
+        }
+
+        // Kiểm tra xem đã có WebSocket đang kết nối hoặc đã kết nối chưa
+        if (globalWsRef.current) {
+            const currentState = globalWsRef.current.readyState;
+            if (currentState === WebSocket.CONNECTING) {
+                console.log('🔍 Global WebSocket đang kết nối, bỏ qua...');
+                return;
+            }
+            if (currentState === WebSocket.OPEN) {
+                console.log('🔍 Global WebSocket đã kết nối, bỏ qua...');
+                return;
+            }
+        }
+
+        // Kiểm tra xem có đang kết nối quá nhanh không (tránh spam connection)
+        const now = Date.now();
+        const timeSinceLastAttempt = now - lastConnectionAttemptRef.current;
+        if (timeSinceLastAttempt < 1000) {
+            console.log('🔍 Connection attempt too soon, delaying...', { timeSinceLastAttempt });
+            // Trì hoãn kết nối thêm một chút
+            if (reconnectTimeoutRef.current) {
+                clearTimeout(reconnectTimeoutRef.current);
+            }
+            reconnectTimeoutRef.current = setTimeout(() => {
+                connectGlobalWebSocket();
+            }, 1000 - timeSinceLastAttempt);
+            return;
+        }
+        
+        lastConnectionAttemptRef.current = now;
+
+        // Đóng WebSocket cũ trước khi tạo mới (nếu có và đang ở trạng thái CLOSING hoặc CLOSED)
+        if (globalWsRef.current) {
+            const oldWs = globalWsRef.current;
+            // Chỉ đóng nếu chưa đóng
+            if (oldWs.readyState === WebSocket.CONNECTING || oldWs.readyState === WebSocket.OPEN) {
+                console.log('🔍 Closing existing Global WebSocket before creating new one...');
+                // Xóa các event handlers để tránh trigger trong quá trình đóng
+                oldWs.onopen = null;
+                oldWs.onmessage = null;
+                oldWs.onerror = null;
+                oldWs.onclose = null;
+                oldWs.close();
+            }
+            globalWsRef.current = null;
+        }
+
+        // Clear reconnect timeout nếu có
+        if (reconnectTimeoutRef.current) {
+            clearTimeout(reconnectTimeoutRef.current);
+            reconnectTimeoutRef.current = null;
         }
 
         try {
@@ -343,23 +407,49 @@ export const useQuizBattle = (onScoreChange?: (scoreChange: number) => void): Us
             };
 
             ws.onclose = () => {
-                console.log('❌ Global WebSocket disconnected');
-                setWsConnected(false);
-                // Dừng ping mechanism khi WebSocket đóng
-                if (globalPingRef.current) {
-                    globalPingRef.current.stopPing();
+                // Chỉ xử lý nếu đây vẫn là WebSocket hiện tại (không bị thay thế)
+                if (globalWsRef.current === ws) {
+                    console.log('❌ Global WebSocket disconnected');
+                    setWsConnected(false);
+                    globalWsRef.current = null;
+                    
+                    // Dừng ping mechanism khi WebSocket đóng
+                    if (globalPingRef.current) {
+                        globalPingRef.current.stopPing();
+                    }
+                    
+                    // Auto reconnect after 3 seconds - chỉ nếu chưa có WebSocket mới
+                    reconnectTimeoutRef.current = setTimeout(() => {
+                        // Kiểm tra lại xem đã có WebSocket mới chưa
+                        if (!globalWsRef.current || globalWsRef.current.readyState === WebSocket.CLOSED) {
+                            console.log('🔄 Attempting to reconnect Global WebSocket...');
+                            connectGlobalWebSocket();
+                        }
+                    }, 3000);
+                } else {
+                    console.log('🔍 Global WebSocket closed (already replaced by new connection)');
                 }
-                
-                // Auto reconnect after 3 seconds
-                reconnectTimeoutRef.current = setTimeout(() => {
-                    console.log('🔄 Attempting to reconnect Global WebSocket...');
-                    connectGlobalWebSocket();
-                }, 3000);
             };
 
             ws.onerror = (error) => {
-                console.error('❌ Global WebSocket error:', error);
-                setWsConnected(false);
+                // Chỉ xử lý lỗi nếu đây vẫn là WebSocket hiện tại
+                if (globalWsRef.current === ws) {
+                    // WebSocket error event không chứa thông tin chi tiết trong object error
+                    // Log thông tin hữu ích để debug
+                    console.error('❌ Global WebSocket error:', {
+                        readyState: ws.readyState,
+                        readyStateText: ws.readyState === WebSocket.CONNECTING ? 'CONNECTING' 
+                            : ws.readyState === WebSocket.OPEN ? 'OPEN'
+                            : ws.readyState === WebSocket.CLOSING ? 'CLOSING'
+                            : ws.readyState === WebSocket.CLOSED ? 'CLOSED' : 'UNKNOWN',
+                        url: wsUrl,
+                        timestamp: new Date().toISOString()
+                    });
+                    setWsConnected(false);
+                    // onclose sẽ được gọi sau và xử lý reconnect tự động
+                } else {
+                    console.log('🔍 Global WebSocket error (already replaced by new connection)');
+                }
             };
 
         } catch (error) {

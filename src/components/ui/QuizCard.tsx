@@ -19,6 +19,7 @@ interface Question {
     };
     detailAnswer?: string;
     isHotQuestion?: boolean; // Thêm trường để đánh dấu Hot question
+    isPaymentRequired?: boolean; // Thêm trường để đánh dấu câu hỏi cần thanh toán
 }
 
 interface QuizCardProps {
@@ -161,13 +162,43 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
         }
     }, [currentQuestionIndex]);
 
+    // Tự động chuyển câu sau 1 giây nếu là câu hỏi cần thanh toán
+    useEffect(() => {
+        const currentQuestion = questionsToUse[currentQuestionIndex];
+        if (currentQuestion?.isPaymentRequired === true) {
+            const timer = setTimeout(() => {
+                setIsDrawingCard(true);
+                if (onTransitionChange) onTransitionChange(true);
+                
+                // Chuyển sang câu tiếp theo
+                setTimeout(() => {
+                    if (currentQuestionIndex < questionsToUse.length - 1) {
+                        setCurrentQuestionIndex(prev => prev + 1);
+                    } else {
+                        setCurrentQuestionIndex(0);
+                    }
+                    
+                    // Hoàn thành card draw effect
+                    setTimeout(() => {
+                        setIsDrawingCard(false);
+                        if (onTransitionChange) onTransitionChange(false);
+                    }, 300);
+                }, 400);
+            }, 1000); // 1 giây
+            
+            return () => clearTimeout(timer);
+        }
+    }, [currentQuestionIndex, questionsToUse]);
+
 
     const handleAnswerSelect = (answerId: number) => {
         if (showResult) return;
+        
+        const currentQuestion = questionsToUse[currentQuestionIndex];
+        if (currentQuestion?.isPaymentRequired === true) return;
 
         setSelectedAnswer(answerId);
 
-        const currentQuestion = questionsToUse[currentQuestionIndex];
         const selectedOption = currentQuestion.options.find(option => option.answerId === answerId);
         const correct = selectedOption?.isCorrect || false;
 
@@ -414,6 +445,25 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
                         </div>
                     )}
 
+                    {/* Payment Required Overlay */}
+                    {currentQuestion?.isPaymentRequired === true && (
+                        <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none">
+                            {/* Lock icon - centered */}
+                            <div className="relative z-10 flex flex-col items-center justify-center">
+                                <div className="w-20 h-20 flex items-center justify-center mb-3">
+                                    <svg 
+                                        className="w-full h-full text-yellow-500 drop-shadow-lg" 
+                                        fill="currentColor" 
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+                                    </svg>
+                                </div>
+                                <p className="text-sm font-medium text-gray-600">Câu hỏi bị khoá</p>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="relative z-10 px-4 py-6 sm:px-8 sm:py-12 flex flex-col h-full overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white">
                         {/* Hot Question Tag */}
                         {currentQuestion.isHotQuestion && (
@@ -456,7 +506,10 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
                         {/* Answer Options */}
                         <div className={`space-y-3 mb-4 transition-all duration-500 ease-out ${
                             isDrawingCard ? 'opacity-0 transform translate-y-4' : 'opacity-100 transform translate-y-0'
-                        }`}>
+                        } ${currentQuestion?.isPaymentRequired === true ? 'pointer-events-none' : ''}`}
+                        style={{
+                            filter: currentQuestion?.isPaymentRequired === true ? 'blur(3.5px)' : 'none'
+                        }}>
                             {currentQuestion.options.map((option: Option, index: number) => {
                                 const answerLabel = String.fromCharCode(65 + index);
                                 const isHidden = hiddenAnswers.includes(option.answerId);
@@ -470,7 +523,7 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
                                         
                                         <button
                                             onClick={() => !isHidden && handleAnswerSelect(option.answerId)}
-                                            disabled={showResult || isHidden}
+                                            disabled={showResult || isHidden || currentQuestion?.isPaymentRequired === true}
                                             className={`
                                                 w-full p-5 rounded-2xl border-2
                                                 flex items-center justify-between text-sm sm:text-base
@@ -478,7 +531,7 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
                                                     ? 'bg-gray-50 text-gray-400 border-gray-100 cursor-not-allowed' 
                                                     : getAnswerButtonClass(option.answerId)
                                                 }
-                                                ${!showResult && !isHidden ? 'cursor-pointer' : 'cursor-default'}
+                                                ${currentQuestion?.isPaymentRequired === true ? 'cursor-not-allowed opacity-50' : !showResult && !isHidden ? 'cursor-pointer' : 'cursor-default'}
                                             `}
                                             style={{
                                                 backgroundColor: showResult && option?.isCorrect ? '#41C911' : undefined,

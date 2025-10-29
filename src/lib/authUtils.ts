@@ -42,7 +42,14 @@ export const checkAndHandle401 = (status: number): boolean => {
  * @returns Promise<Response>
  */
 export const fetchWithAuth = async (url: string, options: RequestInit = {}): Promise<Response> => {
-    const response = await fetch(url, options);
+    // Ensure site header is always set
+    const headers = new Headers(options.headers || {});
+    headers.set('site', 'BATTLE');
+    
+    const response = await fetch(url, {
+        ...options,
+        headers,
+    });
     
     if (!response.ok && checkAndHandle401(response.status)) {
         throw new Error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');

@@ -50,16 +50,93 @@ const HomePage: React.FC = () => {
     const [currentQuestionId, setCurrentQuestionId] = useState<number | null>(null);
     const [usedToolsThisQuestion, setUsedToolsThisQuestion] = useState<Set<string>>(new Set()); // server tool types: battleHint, battleSnow, ...
 
-    // Initialize WebSocket khi user đã đăng nhập - chỉ chạy 1 lần
+    // Initialize WebSocket khi user đã đăng nhập - reconnect nếu disconnected
+    const prevWsConnectedRef = useRef<boolean | undefined>(undefined);
+    const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const lastReconnectAttemptRef = useRef<number>(0);
+    
     useEffect(() => {
-        if (isInitialized && user && !hasInitializedRef.current) {
-            console.log('🔍 HomePage: User authenticated, initializing Global WebSocket...');
-            hasInitializedRef.current = true;
-            initialize();
-            // Gọi API để lấy userBag khi vào home
-            fetchUserBag();
+        if (isInitialized && user) {
+            // Nếu chưa initialize lần đầu
+            if (!hasInitializedRef.current) {
+                console.log('🔍 HomePage: User authenticated, initializing Global WebSocket for the first time...');
+                hasInitializedRef.current = true;
+                initialize();
+                fetchUserBag();
+            } 
+            // Nếu đã initialize nhưng WebSocket bị disconnected (chuyển từ connected sang disconnected)
+            else if (prevWsConnectedRef.current === true && wsConnected === false) {
+                console.log('🔍 HomePage: WebSocket disconnected, attempting to reconnect...');
+                initialize();
+            }
+            // Nếu đã initialize nhưng WebSocket không connected (có thể do quay về trang home)
+            // Chỉ reconnect nếu đã qua ít nhất 2 giây từ lần reconnect cuối cùng
+            else if (hasInitializedRef.current && !wsConnected) {
+                const now = Date.now();
+                const timeSinceLastReconnect = now - lastReconnectAttemptRef.current;
+                
+                // Clear timeout trước nếu có
+                if (reconnectTimeoutRef.current) {
+                    clearTimeout(reconnectTimeoutRef.current);
+                }
+                
+                // Chỉ reconnect nếu đã qua 2 giây từ lần reconnect cuối
+                if (timeSinceLastReconnect > 2000) {
+                    reconnectTimeoutRef.current = setTimeout(() => {
+                        if (!wsConnected && isInitialized && user) {
+                            console.log('🔍 HomePage: WebSocket not connected, attempting to reconnect after returning to home...');
+                            lastReconnectAttemptRef.current = Date.now();
+                            initialize();
+                        }
+                    }, 500); // Delay 500ms
+                }
+            }
+            
+            // Cập nhật ref để track trạng thái WebSocket
+            prevWsConnectedRef.current = wsConnected;
         }
-    }, [isInitialized, user, initialize, fetchUserBag]);
+        
+        // Cleanup timeout khi unmount
+        return () => {
+            if (reconnectTimeoutRef.current) {
+                clearTimeout(reconnectTimeoutRef.current);
+                reconnectTimeoutRef.current = null;
+            }
+        };
+    }, [isInitialized, user, initialize, fetchUserBag, wsConnected]);
+
+    // Detect khi user quay lại trang/tab và reconnect WebSocket nếu cần
+    const visibilityTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible' && isInitialized && user && hasInitializedRef.current && !wsConnected) {
+                console.log('🔍 HomePage: Page became visible, checking WebSocket connection...');
+                
+                // Clear timeout trước nếu có
+                if (visibilityTimeoutRef.current) {
+                    clearTimeout(visibilityTimeoutRef.current);
+                }
+                
+                // Reconnect nếu WebSocket không connected sau 1 giây
+                visibilityTimeoutRef.current = setTimeout(() => {
+                    if (!wsConnected && isInitialized && user) {
+                        console.log('🔍 HomePage: WebSocket still not connected after page visible, reconnecting...');
+                        initialize();
+                    }
+                }, 1000);
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            if (visibilityTimeoutRef.current) {
+                clearTimeout(visibilityTimeoutRef.current);
+                visibilityTimeoutRef.current = null;
+            }
+        };
+    }, [isInitialized, user, wsConnected, initialize]);
 
     // Auto join room khi có closeCategoryCode và rooms đã được load
     useEffect(() => {

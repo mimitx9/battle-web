@@ -36,6 +36,7 @@ const api = axios.create({
     baseURL: API_BASE_URL,
     headers: {
         'Content-Type': 'application/json',
+        'site': 'BATTLE',
     },
 });
 
@@ -43,6 +44,7 @@ const authApi = axios.create({
     baseURL: AUTH_API_BASE_URL,
     headers: {
         'Content-Type': 'application/json',
+        'site': 'BATTLE',
     },
 });
 
@@ -50,6 +52,7 @@ const userProfileApi = axios.create({
     baseURL: USER_PROFILE_URL,
     headers: {
         'Content-Type': 'application/json',
+        'site': 'BATTLE',
     },
 });
 
@@ -58,6 +61,7 @@ const quizApiInstance = axios.create({
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
+        'site': 'BATTLE',
     },
 });
 
@@ -66,6 +70,7 @@ const quizBattleApiInstance = axios.create({
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
+        'site': 'BATTLE',
     },
 });
 
@@ -75,6 +80,8 @@ api.interceptors.request.use((config) => {
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
+    // Ensure site header is always set
+    config.headers.site = 'BATTLE';
     return config;
 });
 
@@ -83,6 +90,8 @@ userProfileApi.interceptors.request.use((config) => {
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
+    // Ensure site header is always set
+    config.headers.site = 'BATTLE';
     return config;
 });
 
@@ -95,6 +104,8 @@ quizApiInstance.interceptors.request.use((config) => {
     } else {
         console.warn('⚠️ No auth token found for quiz API');
     }
+    // Ensure site header is always set
+    config.headers.site = 'BATTLE';
     return config;
 });
 
@@ -103,6 +114,8 @@ quizBattleApiInstance.interceptors.request.use((config) => {
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
+    // Ensure site header is always set
+    config.headers.site = 'BATTLE';
     return config;
 });
 

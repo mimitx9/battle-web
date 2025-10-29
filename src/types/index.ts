@@ -284,6 +284,7 @@ export interface Question {
     options: QuestionOption[];
     detailAnswer: string;
     needDetail: boolean;
+    isPaymentRequired: boolean;
     extraData: {
         categorySubCode?: string;
         categorySubTitle?: string;
