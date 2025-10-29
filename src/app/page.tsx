@@ -46,6 +46,9 @@ const HomePage: React.FC = () => {
     const [showQuiz, setShowQuiz] = useState(false);
     const [currentScoreChange, setCurrentScoreChange] = useState<number | undefined>(undefined);
     const quizCardRef = useRef<QuizCardRef>(null);
+    const [isTransitioningQuestion, setIsTransitioningQuestion] = useState(false);
+    const [currentQuestionId, setCurrentQuestionId] = useState<number | null>(null);
+    const [usedToolsThisQuestion, setUsedToolsThisQuestion] = useState<Set<string>>(new Set()); // server tool types: battleHint, battleSnow, ...
 
     // Initialize WebSocket khi user đã đăng nhập - chỉ chạy 1 lần
     useEffect(() => {
@@ -104,15 +107,10 @@ const HomePage: React.FC = () => {
         }
     };
 
-    // Handler cho việc submit answer trong quiz
+    // Handler cho việc submit answer trong quiz (giữ lại nếu cần xử lý nội bộ khác)
     const handleQuizAnswer = async (questionId: number, answerId: number, isCorrect: boolean, answerTime: number) => {
-        try {
-            // Determine difficulty based on question or use default
-            const difficulty = 'medium'; // Default difficulty
-            submitAnswer(questionId, isCorrect, answerTime, difficulty);
-        } catch (error) {
-            console.error('❌ Failed to submit answer:', error);
-        }
+        // Đã chuyển sang để QuizCard tự gọi submitAnswer (có kèm insane). Không gọi ở đây để tránh gửi trùng.
+        return;
     };
 
     // Handler để xử lý khi sử dụng hint từ HelpTool
@@ -135,6 +133,9 @@ const HomePage: React.FC = () => {
                 quizCardRef.current.useSnow();
             }
         }
+
+        // Đánh dấu tool đã dùng trong câu hiện tại (server tool type)
+        setUsedToolsThisQuestion(prev => new Set([...prev, toolType]));
     };
 
     // Handler để hiển thị tool effect
@@ -149,6 +150,35 @@ const HomePage: React.FC = () => {
     // Handler để cập nhật userBag từ HelpTool
     const handleUserBagUpdate = (updatedUserBag: any) => {
         updateUserBag(updatedUserBag);
+    };
+
+    // Callback khi đổi câu hỏi từ QuizCard
+    const handleQuestionChange = (qid: number) => {
+        setCurrentQuestionId(qid);
+        // Reset danh sách tool đã dùng cho câu mới
+        setUsedToolsThisQuestion(new Set());
+    };
+
+    // Callback trạng thái chuyển câu
+    const handleTransitionChange = (isTrans: boolean) => {
+        setIsTransitioningQuestion(isTrans);
+    };
+
+    // Kiểm tra có thể dùng tool theo từng loại (client keys)
+    const canUseTool = (toolKey: 'hint' | 'snow' | 'blockTop1' | 'blockBehind') => {
+        // Map client key -> server tool type
+        const mapping: Record<string, string> = {
+            hint: 'battleHint',
+            snow: 'battleSnow',
+            blockTop1: 'battleBlockTop1',
+            blockBehind: 'battleBlockBehind'
+        };
+        const serverTool = mapping[toolKey];
+        if (!serverTool) return false;
+        // Chặn nếu đang chuyển câu
+        if (isTransitioningQuestion) return false;
+        // Chỉ cho dùng nếu chưa dùng trong câu hiện tại
+        return !usedToolsThisQuestion.has(serverTool);
     };
 
     // Handler khi quiz hoàn thành
@@ -215,8 +245,11 @@ const HomePage: React.FC = () => {
                                                 ref={quizCardRef}
                                                 questions={quizQuestions}
                                                 onSubmitAnswer={handleQuizAnswer}
+                                                submitAnswer={submitAnswer}
                                                 onHintUsed={handleHintUsed}
                                                 scoreChange={currentScoreChange}
+                                                onQuestionChange={handleQuestionChange}
+                                                onTransitionChange={handleTransitionChange}
                                             />
                                         </div>
                                         {/* Help Tool bên dưới Quiz Card */}
@@ -226,6 +259,8 @@ const HomePage: React.FC = () => {
                                             onToolUsed={handleHelpToolUsed}
                                             onUserBagUpdate={handleUserBagUpdate}
                                             onShowToolEffect={handleShowToolEffect}
+                                            disabled={isTransitioningQuestion}
+                                            canUseTool={canUseTool}
                                         />
                                     </>
                                 ) : (

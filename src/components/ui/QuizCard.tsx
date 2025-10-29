@@ -27,6 +27,8 @@ interface QuizCardProps {
     submitAnswer?: (questionId: number, isCorrect: boolean, answerTime: number, difficulty: string, insane?: boolean) => void;
     onHintUsed?: (questionId: number) => void; // Callback khi sử dụng hint
     scoreChange?: number; // Điểm số thay đổi từ server response
+    onQuestionChange?: (questionId: number) => void;
+    onTransitionChange?: (isTransitioning: boolean) => void;
 }
 
 export interface QuizCardRef {
@@ -46,7 +48,7 @@ const detectHotQuestion = (question: Question): Question => {
     };
 };
 
-const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSubmitAnswer = () => {}, submitAnswer, onHintUsed, scoreChange }, ref) => {
+const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSubmitAnswer = () => {}, submitAnswer, onHintUsed, scoreChange, onQuestionChange, onTransitionChange }, ref) => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [answers, setAnswers] = useState<any[]>([]);
     const [score, setScore] = useState(0);
@@ -151,6 +153,12 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
                 playInsaneSound();
             }, 500);
         }
+
+        // Thông báo câu hỏi hiện tại thay đổi
+        const q = questionsToUse[currentQuestionIndex];
+        if (q && onQuestionChange) {
+            onQuestionChange(q.questionId);
+        }
     }, [currentQuestionIndex]);
 
 
@@ -205,6 +213,7 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
         // Delay before card draw animation
         setTimeout(() => {
             setIsDrawingCard(true);
+            if (onTransitionChange) onTransitionChange(true);
             
             // Play next quiz sound when transitioning to next question
             if (correct) {
@@ -225,6 +234,7 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
                 // Complete the card draw effect
                 setTimeout(() => {
                     setIsDrawingCard(false);
+                    if (onTransitionChange) onTransitionChange(false);
                 }, 300);
             }, 400);
         }, 2000);
@@ -534,8 +544,8 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
                                      WebkitBackgroundClip: 'text',
                                      backgroundClip: 'text',
                                      animation: showResult ? 'popup 0.6s ease-out' : 'none'
-                                 }}>
-{isCorrect && scoreChange ? `+${scoreChange}` : '0'}
+                                }}>
+{showResult ? (isCorrect ? (typeof scoreChange === 'number' && scoreChange > 0 ? `+${scoreChange}` : '') : '0') : ''}
                             </div>
                     </div>
                 )}

@@ -18,9 +18,11 @@ interface HelpToolProps {
     onUserBagUpdate?: (updatedUserBag: HelpToolProps['userBag']) => void;
     onError?: (error: string) => void;
     onShowToolEffect?: (toolType: string) => void; // Callback để hiển thị tool effect
+    disabled?: boolean; // Disable toàn bộ help tool (ví dụ đang chuyển câu)
+    canUseTool?: (toolKey: 'hint' | 'snow' | 'blockTop1' | 'blockBehind') => boolean; // Kiểm tra có thể dùng tool này trong câu hiện tại không
 }
 
-const HelpTool: React.FC<HelpToolProps> = ({ className = '', userBag, onToolUsed, sendHelpTool, onUserBagUpdate, onError, onShowToolEffect }) => {
+const HelpTool: React.FC<HelpToolProps> = ({ className = '', userBag, onToolUsed, sendHelpTool, onUserBagUpdate, onError, onShowToolEffect, disabled = false, canUseTool }) => {
 
     // Function để xử lý khi user sử dụng help tool
     const handleToolClick = (toolType: string) => {
@@ -35,6 +37,14 @@ const HelpTool: React.FC<HelpToolProps> = ({ className = '', userBag, onToolUsed
         const serverToolType = toolMapping[toolType];
         if (!serverToolType) {
             console.error('❌ Invalid tool type:', toolType);
+            return;
+        }
+
+        // Chặn nếu đang disabled toàn bộ hoặc không được phép dùng tool này trong câu hiện tại
+        if (disabled) {
+            return;
+        }
+        if (canUseTool && !canUseTool(toolType as any)) {
             return;
         }
         
@@ -99,6 +109,7 @@ const HelpTool: React.FC<HelpToolProps> = ({ className = '', userBag, onToolUsed
         index: number
     ) => {
         const isOwned = quantity > 0;
+        const isAllowed = type === 'hide' ? false : (canUseTool ? canUseTool(type) : true);
         
         let gradient = 'linear-gradient(to top,rgb(14, 4, 106), #04002A )';
         let icon = null;
@@ -180,14 +191,14 @@ const HelpTool: React.FC<HelpToolProps> = ({ className = '', userBag, onToolUsed
                                 ? `0 4px 4px rgba(0, 0, 0, 0.3), inset 0 -4px 4px rgba(255, 255, 255, 0.4)` 
                                 : `0 4px 4px rgba(7, 0, 73, 0.3), inset 0 -4px 4px rgba(255, 255, 255, 0.2)`
                         }}
-                        disabled={!isOwned}
+                        disabled={!isOwned || disabled || !isAllowed}
                         onMouseEnter={() => {
-                            if (isOwned && type !== 'hide') {
+                            if (!disabled && isOwned && isAllowed && type !== 'hide') {
                                 playClickSound();
                             }
                         }}
                         onClick={() => {
-                            if (isOwned && type !== 'hide') {
+                            if (!disabled && isOwned && isAllowed && type !== 'hide') {
                                 handleToolClick(type);
                             }
                         }}
