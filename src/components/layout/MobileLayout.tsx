@@ -30,10 +30,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({ children, activeTab, onTabC
                             activeTab === 'rooms' ? 'text-yellow-400' : 'text-white/50'
                         }`}
                     >
-                        <div className="text-2xl mb-1">
-                            🏠
-                        </div>
-                        <span className="text-xs font-medium">Rooms</span>
+                        <span className="text-xs font-medium">Room</span>
                     </button>
 
                     {/* Quiz Tab */}
@@ -43,9 +40,6 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({ children, activeTab, onTabC
                             activeTab === 'quiz' ? 'text-yellow-400' : 'text-white/50'
                         }`}
                     >
-                        <div className="text-2xl mb-1">
-                            ✏️
-                        </div>
                         <span className="text-xs font-medium">Quiz</span>
                     </button>
 
@@ -56,9 +50,6 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({ children, activeTab, onTabC
                             activeTab === 'leaderboard' ? 'text-yellow-400' : 'text-white/50'
                         }`}
                     >
-                        <div className="text-2xl mb-1">
-                            🏆
-                        </div>
                         <span className="text-xs font-medium">Ranking</span>
                     </button>
                 </div>

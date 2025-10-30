@@ -238,6 +238,7 @@ const MobilePage: React.FC = () => {
                     wsConnected={wsConnected}
                     roomWsConnected={roomWsConnected}
                     userBag={userBag}
+                    onOpenRooms={() => setActiveTab('rooms')}
                 />
                 
                 <MobileLayout 
@@ -275,7 +276,7 @@ const MobilePage: React.FC = () => {
 
                     {/* Tab: Quiz */}
                     {activeTab === 'quiz' && (
-                        <div className="flex-1 overflow-y-auto p-4">
+                        <div className="flex-1 overflow-y-auto p-4 pt-20">
                             {showQuiz && quizQuestions && quizQuestions.length > 0 ? (
                                 <div className="space-y-4">
                                     <div className="flex-1 min-h-0">
@@ -301,10 +302,9 @@ const MobilePage: React.FC = () => {
                                     />
                                 </div>
                             ) : (
-                                <div className="bg-white/10 rounded-3xl h-full flex items-center justify-center p-8">
+                                <div className="bg-white/10 rounded-3xl h-full min-h-[calc(100vh-200px)] flex items-center justify-center p-8">
                                     <div className="text-center text-white">
-                                        <h3 className="text-lg font-semibold mb-4">Chọn room</h3>
-                                        <p className="text-sm">Chuyển sang tab Rooms để chọn room battle</p>
+                                        <h3 className="text-lg mb-4">Chọn phòng</h3>
                                     </div>
                                 </div>
                             )}
