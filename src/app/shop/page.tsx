@@ -204,7 +204,7 @@ const ShopPage: React.FC = () => {
                   <span className="text-yellow-400 ml-3">200 key</span>
                   </div>
 
-                <div className="text-white/50 text-2xl" style={{ fontFamily: 'Baloo' }}>
+                <div className="text-white/50 text-2xl tracking-wider" style={{ fontFamily: 'Baloo' }}>
                     Còn {formatTime(timeLeft)} phút
                   </div>
               </div>
@@ -213,7 +213,7 @@ const ShopPage: React.FC = () => {
                 <Image src="/logos/account/buy-key.png" alt="Key" width={160} height={120} />
                 
 
-                <button className="py-4 px-8 mb-6 rounded-full text-white text-xl font-bold tracking-wider transition bg-gradient-to-b from-[#FFD700] to-[#FF8C00] shadow-xl shadow-[#FFBA08]/20 hover:shadow-[#FFBA08]/30">
+                <button className="py-4 px-12 mb-6 rounded-full text-white text-xl font-bold tracking-wider transition bg-gradient-to-b from-[#FFD700] to-[#FF8C00] shadow-xl shadow-[#FFBA08]/20 hover:shadow-[#FFBA08]/30">
                     100K
                   </button>
                 </div>
@@ -224,7 +224,7 @@ const ShopPage: React.FC = () => {
               {shopItems.map((item) => (
                   <div
                       key={item.id}
-                className="rounded-3xl px-8 py-4 text-center duration-300 transition-all relative border-4 hover:scale-105 cursor-pointer"
+                className="rounded-3xl px-8 py-4 mb-28 text-center duration-300 transition-all relative border-4 hover:scale-105 cursor-pointer"
                 style={{ 
                   background: `linear-gradient(to bottom, transparent, ${item.gradient.match(/#[A-Fa-f0-9]{6}|rgb\([^)]+\)/g)?.[1] || item.gradient.split(',')[1].trim().replace(')', '')}2a)`,
                   borderColor: '#252145',
@@ -273,9 +273,9 @@ const ShopPage: React.FC = () => {
 
                 {/* Tag badge (top-right) */}
                 {item.tags && item.tags.trim() !== '' && (
-                  <div className="absolute top-2 right-2 z-20">
-                    <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-white shadow"
-                          style={{ background: 'linear-gradient(90deg, #FF3D71 0%, #FF8C00 100%)' }}>
+                  <div className="absolute top-3 right-2 z-20">
+                    <span className="px-3 py-2 rounded-full text-xs font-bold uppercase tracking-wider text-white"
+                          style={{ background: 'linear-gradient(0, #FF8C00 0%, #FFD700 100%)' }}>
                       {item.tags}
                     </span>
                   </div>

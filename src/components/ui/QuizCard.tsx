@@ -402,7 +402,7 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
     const currentQuestion = questionsToUse[currentQuestionIndex];
 
     return (
-        <div className="w-full h-full flex items-center justify-center px-12">
+        <div className="w-full h-full flex items-center justify-center md:px-12">
             <div className="relative w-full h-full">
                 {/* Stack Layer 2 - Middle */}
                 <div className={`absolute top-0 bottom-0 left-8 right-8 rounded-3xl`} style={{backgroundColor: '#2B2652'}}></div>
@@ -464,7 +464,7 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
                         </div>
                     )}
 
-                    <div className="relative z-10 px-4 py-6 sm:px-8 sm:py-12 flex flex-col h-full overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white">
+                    <div className="relative z-10 px-6 py-8 sm:px-8 sm:py-12 flex flex-col h-full overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white">
                         {/* Hot Question Tag */}
                         {currentQuestion.isHotQuestion && (
                             <div className={`mb-4 animate-bounce transition-all duration-500 ease-out ${
@@ -579,7 +579,7 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
 
                 {/* Result Message - External Position */}
                 {showResult && (
-                    <div className={`absolute -right-32 top-1/3 transform -translate-y-1/2 z-20 transition-all duration-300 ease-out delay-300 ${
+                    <div className={`absolute left-1/2 top-1/3 transform -translate-x-1/2 -translate-y-1/2 z-20 transition-all duration-300 ease-out delay-300 md:left-auto md:top-1/3 md:-right-32 md:translate-x-0 md:-translate-y-1/2 ${
                         isDrawingCard ? 'opacity-0 transform translate-y-4' : 'opacity-100 transform translate-y-0'
                     }`}>
                         <div className={`text-6xl text-center transition-all duration-500 ease-out ${

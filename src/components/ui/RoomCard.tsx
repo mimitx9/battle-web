@@ -58,7 +58,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, isSelected = false, onClick }
         {/* Content */}
         <div className="flex-1 min-w-0">
           {/* Title */}
-          <h3 className="text-white font-medium text-xs mb-2.5 truncate">
+          <h3 className="text-white font-medium text-sm md:text-xs mb-2.5 truncate">
             {room.categoryTitle}
           </h3>
 

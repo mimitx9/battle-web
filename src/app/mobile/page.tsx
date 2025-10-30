@@ -51,6 +51,8 @@ const MobilePage: React.FC = () => {
     const [currentQuestionId, setCurrentQuestionId] = useState<number | null>(null);
     const [usedToolsThisQuestion, setUsedToolsThisQuestion] = useState<Set<string>>(new Set());
     const [activeTab, setActiveTab] = useState<'rooms' | 'quiz' | 'leaderboard'>('rooms');
+    const rankingContainerRef = useRef<HTMLDivElement | null>(null);
+    const currentUserRankingRef = useRef<HTMLDivElement | null>(null);
 
     // Initialize WebSocket khi user đã đăng nhập
     const prevWsConnectedRef = useRef<boolean | undefined>(undefined);
@@ -148,6 +150,33 @@ const MobilePage: React.FC = () => {
             setActiveTab('quiz');
         }
     }, [quizQuestions, showCooldown]);
+
+    // Auto scroll ranking bar to current user
+    useEffect(() => {
+        if (!rankings || rankings.length === 0 || !user) return;
+        const timer = setTimeout(() => {
+            if (currentUserRankingRef.current && rankingContainerRef.current) {
+                try {
+                    currentUserRankingRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                } catch {}
+            }
+        }, 0);
+        return () => clearTimeout(timer);
+    }, [rankings, user]);
+
+    // Also scroll when entering quiz or changing question
+    useEffect(() => {
+        if (activeTab !== 'quiz' || !showQuiz) return;
+        if (!rankings || rankings.length === 0 || !user) return;
+        const timer = setTimeout(() => {
+            if (currentUserRankingRef.current && rankingContainerRef.current) {
+                try {
+                    currentUserRankingRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                } catch {}
+            }
+        }, 0);
+        return () => clearTimeout(timer);
+    }, [activeTab, showQuiz, currentQuestionId, rankings, user]);
 
     // Handler để xử lý khi click vào room
     const handleRoomClick = async (room: any) => {
@@ -276,10 +305,53 @@ const MobilePage: React.FC = () => {
 
                     {/* Tab: Quiz */}
                     {activeTab === 'quiz' && (
-                        <div className="flex-1 overflow-y-auto p-4 pt-20">
+                        <div className="flex-1 overflow-y-auto p-4 pt-20 h-full flex flex-col">
                             {showQuiz && quizQuestions && quizQuestions.length > 0 ? (
-                                <div className="space-y-4">
-                                    <div className="flex-1 min-h-0">
+                                <div className="space-y-4 min-h-0">
+                                    {/* Horizontal Ranking Bar */}
+                                    {rankings && rankings.length > 0 && (
+                                        <div className="w-full">
+                                            <div ref={rankingContainerRef} className="flex gap-2 overflow-x-auto scrollbar-dark no-scrollbar">
+                                                {rankings.map((r: any) => (
+                                                    <div
+                                                        key={`${r.userId}-${r.rank}`}
+                                                        ref={r.userId === user?.userId ? currentUserRankingRef : undefined}
+                                                        className={`flex items-center gap-2 flex-shrink-0 px-3 ${r.userId === user?.userId ? '' : 'opacity-50'}`}
+                                                    >
+                                                        {r.rank === 1 || r.rank === 2 || r.rank === 3 ? (
+                                                            <div className="relative w-6 h-6 flex-shrink-0">
+                                                                <img
+                                                                    src={r.rank === 1 ? '/logos/home/top1.svg' : r.rank === 2 ? '/logos/home/top2.svg' : '/logos/home/top3.svg'}
+                                                                    alt={`Top ${r.rank}`}
+                                                                    className="w-6 h-6"
+                                                                />
+                                                                <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>
+                                                                    {r.rank}
+                                                                </span>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="hidden" />
+                                                        )}
+                                                        <div className="flex flex-col leading-tight space-y-1">
+                                                            <span className="text-white text-xs font-medium track-wide truncate max-w-[150px] inline-flex items-center gap-1">
+                                                                {r.rank > 3 && (
+                                                                    <span className={`inline-flex items-center justify-center text-xs ${r.userId === user?.userId ? 'text-fuchsia-400' : 'text-blue-400'}`}>
+                                                                        {r.rank}
+                                                                    </span>
+                                                                )}
+                                                                {r.fullName}
+                                                            </span>
+                                                            <span className="text-white text-xs font-normal track-wide inline-flex items-center gap-1">
+                                                                <img src="/logos/battle.svg" alt="" className="w-4 h-4" />
+                                                                {r.score}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className="flex-1 h-[calc(100vh-250px)]">
                                         <QuizCard
                                             ref={quizCardRef}
                                             questions={quizQuestions}

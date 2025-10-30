@@ -37,15 +37,7 @@ const MobileRoomList: React.FC<MobileRoomListProps> = ({ rooms, currentRoom, onR
 
   return (
     <div className="h-full flex flex-col relative pt-16 min-h-0 overflow-hidden">
-      {/* Gradient Overlay */}
-      <div 
-        className={`absolute inset-0 z-40 transition-opacity duration-300 pointer-events-none ${
-          (isSearchFocused || isHoveringContent) ? 'opacity-0' : 'opacity-100'
-        }`}
-        style={{
-          background: 'linear-gradient(to top, rgb(4, 0, 42),  rgba(4, 0, 42, 0.98), rgba(4, 0, 42, 0))'
-        }}
-      />
+      
 
       <div className="flex-1 min-h-0 flex flex-col relative z-30">
         {/* Header */}
@@ -60,6 +52,7 @@ const MobileRoomList: React.FC<MobileRoomListProps> = ({ rooms, currentRoom, onR
               onBlur={() => setIsSearchFocused(false)}
               onMouseEnter={() => setIsSearchFocused(true)}
               onMouseLeave={() => setIsSearchFocused(false)}
+              autoFocus
               className="bg-transparent text-white placeholder-white/40 px-6 py-4 text-md focus:outline-none border-0 border-b-2 border-white/10 focus:border-white/10 w-full"
             />
             <svg

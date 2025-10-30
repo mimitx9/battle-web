@@ -172,9 +172,8 @@ const AccountPage: React.FC = () => {
           </div>
 
           {/* User Bag - Help Tools styled like shop */}
-          <div className="mt-12">
-            <h3 className="text-white text-2xl mb-6">Túi đồ</h3>
-            <div className="grid grid-cols-2 gap-6 sm:grid-cols-2 md:grid-cols-2">
+          <div className="mt-24">
+            <div className="grid grid-cols-3 gap-4 sm:grid-cols-3 md:grid-cols-3">
               {[
                 {
                   key: 'battleHint' as const,
@@ -222,19 +221,18 @@ const AccountPage: React.FC = () => {
                   key: 'battleBlockBehind' as const,
                   title: 'CHẶN PHÍA SAU',
                   quantity: userBag?.battleBlockBehind || 0,
-                  gradient: 'linear-gradient(to top, #1a2a6c, #b21f1f)',
+                  gradient: 'linear-gradient(to top, rgb(17, 35, 2),rgb(118, 220, 30))',
                   icon: (
-                    <svg width="48" height="48" viewBox="0 0 73 73" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="36.5" cy="36.5" r="31.5" stroke="white" strokeWidth="10"/>
-                      <rect x="56.8262" y="10.103" width="10" height="61.6951" transform="rotate(45 56.8262 10.103)" fill="white"/>
-                      <path d="M42.2939 47.707C42.9239 47.0773 44.0009 47.5233 44.001 48.4141V53C44.001 54.6568 42.6578 55.9999 41.001 56H36.415C35.5242 56 35.0781 54.9229 35.708 54.293L42.2939 47.707ZM41.001 15C42.6578 15.0001 44.001 16.3432 44.001 18V33.7324C44.0008 35.3891 42.6577 36.7324 41.001 36.7324H37.001C35.3442 36.7324 34.0011 35.3891 34.001 33.7324V27.3418L29.2002 27.3223C26.5337 27.3109 25.2063 24.0867 27.0918 22.2012L34.001 15.292V15H41.001Z" fill="white"/>
-                    </svg>
+                    
+                <svg width="48" height="48" viewBox="0 0 73 73" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="36.5" cy="36.5" r="31.5" stroke="white" strokeWidth="10"/>
+                </svg>
                   )
                 },
               ].map((it, idx) => (
                 <div
                   key={it.key}
-                  className="rounded-3xl px-8 py-6 text-center relative border-4"
+                  className="rounded-3xl px-8 py-6 text-center relative border-4 mb-16"
                   style={{
                     background: `linear-gradient(to bottom, transparent, rgba(255,255,255,0.05))`,
                     borderColor: '#252145',

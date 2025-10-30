@@ -138,7 +138,7 @@ const Header: React.FC<HeaderProps> = ({
               alt="Key" 
               className="w-6 h-6"
             />
-            <span className="text-yellow-400 font-bold text-lg">
+            <span className="text-yellow-400 font-bold text-sm">
               {userBag?.key || 0}
             </span>
           </div>
@@ -214,12 +214,12 @@ const Header: React.FC<HeaderProps> = ({
         
         {/* Avatar with dropdown menu */}
         <div className="relative group flex items-center">
-          <button className="cursor-pointer transition-opacity bg-gradient-to-t from-transparent to-white rounded-full flex items-center">
+          <button className="cursor-pointer transition-opacity bg-white rounded-full flex items-center">
             {user && user.avatar ? (
               <img 
                 src={user.avatar} 
                 alt={user.fullName || user.username}
-                className="w-8 h-8 rounded-full object-cover"
+                className="w-8 h-8 rounded-full object-cover bg-gradient-to-t from-transparent to-white"
               />
             ) : (
               <img 
