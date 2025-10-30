@@ -355,7 +355,7 @@ const HomePage: React.FC = () => {
                             {/* Cột phải - Leaderboard (w-1/3) */}
                             <div className="w-1/3 flex flex-col h-full min-h-0">
                                 {/* Wrapper scroll cho Leaderboard */}
-                                <div className="flex-1 overflow-y-auto min-h-0 pr-2">
+                                <div className="flex-1 overflow-y-auto min-h-0 scrollbar-dark">
                                     <Leaderboard 
                                         rankings={rankings}
                                         showStreak={true}

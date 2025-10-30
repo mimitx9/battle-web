@@ -192,7 +192,7 @@ const HomeLoginForm: React.FC<HomeLoginFormProps> = ({ onSuccess }) => {
 
             <button
               type="submit"
-              className="w-full py-5 rounded-full text-white font-semibold uppercase transition disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-b from-[#FFD700] to-[#FF8C00] shadow-lg shadow-[#FFBA08]/30 ring-1 ring-inset ring-white/20"
+              className="w-full py-5 tracking-wide rounded-full text-white uppercase transition disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-b from-[#FFD700] to-[#FF8C00] shadow-lg shadow-[#FFBA08]/30"
               disabled={isLoading}
             >
               {isLoading 
@@ -206,7 +206,7 @@ const HomeLoginForm: React.FC<HomeLoginFormProps> = ({ onSuccess }) => {
             <p className="m-0">
               {isRegisterMode ? 'Đã có tài khoản?' : 'Chưa có tài khoản?'} 
               <span 
-                className="text-[#FFBA08] font-semibold hover:text-[#e6a800] transition cursor-pointer"
+                className="text-[#FFBA08] hover:text-[#e6a800] transition cursor-pointer font-semibold"
                 onClick={switchMode}
               >
                 {isRegisterMode ? ' ĐĂNG NHẬP' : ' ĐĂNG KÝ'}

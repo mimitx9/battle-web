@@ -447,20 +447,20 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
 
                     {/* Payment Required Overlay */}
                     {currentQuestion?.isPaymentRequired === true && (
-                        <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none">
-                            {/* Lock icon - centered */}
-                            <div className="relative z-10 flex flex-col items-center justify-center">
+                        <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-auto">
+                            {/* Lock icon - centered clickable area */}
+                            <a href="https://m.me/appfaquiz?ref=battle" target="_blank" rel="noopener noreferrer" className="relative z-10 flex flex-col items-center justify-center group cursor-pointer" aria-label="Nâng cấp tài khoản PRO">
                                 <div className="w-20 h-20 flex items-center justify-center mb-3">
                                     <svg 
-                                        className="w-full h-full text-yellow-500 drop-shadow-lg" 
-                                        fill="currentColor" 
+                                        className="w-full h-full transition-transform duration-200 group-hover:scale-110" 
+                                        fill="#888" 
                                         viewBox="0 0 24 24"
                                     >
                                         <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
                                     </svg>
                                 </div>
-                                <p className="text-sm font-medium text-gray-600">Câu hỏi bị khoá</p>
-                            </div>
+                                <p className="text-sm font-medium text-gray-600 group-hover:text-gray-800">Nâng cấp PRO</p>
+                            </a>
                         </div>
                     )}
 
@@ -508,7 +508,7 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
                             isDrawingCard ? 'opacity-0 transform translate-y-4' : 'opacity-100 transform translate-y-0'
                         } ${currentQuestion?.isPaymentRequired === true ? 'pointer-events-none' : ''}`}
                         style={{
-                            filter: currentQuestion?.isPaymentRequired === true ? 'blur(3.5px)' : 'none'
+                            filter: currentQuestion?.isPaymentRequired === true ? 'blur(2px)' : 'none'
                         }}>
                             {currentQuestion.options.map((option: Option, index: number) => {
                                 const answerLabel = String.fromCharCode(65 + index);
