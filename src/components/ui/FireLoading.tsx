@@ -7,13 +7,15 @@ interface FireLoadingProps {
   maxPoints?: number;
   size?: 'sm' | 'md' | 'lg';
   showNumber?: boolean;
+  numberClassName?: string;
 }
 
 const FireLoading: React.FC<FireLoadingProps> = ({ 
   firePoints, 
   maxPoints = 180, 
   size = 'md',
-  showNumber = true 
+  showNumber = true,
+  numberClassName,
 }) => {
   const progress = Math.min((firePoints / maxPoints) * 100, 100);
   const circumference = 2 * Math.PI * 20; // radius = 20
@@ -100,7 +102,7 @@ const FireLoading: React.FC<FireLoadingProps> = ({
 
       {/* Fire points number */}
       {showNumber && (
-        <span className={`text-orange-400 font-bold text-lg`}>
+        <span className={`text-orange-400 font-bold ${numberClassName || getTextSizes(size)}`}>
           {firePoints}
         </span>
       )}

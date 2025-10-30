@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { RankingEntry } from '../../types';
 
 interface LeaderboardProps {
@@ -146,6 +146,29 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
 
     // Chỉ hiển thị mock data khi được yêu cầu (để demo)
     const displayRankings = showMockData ? mockRankings : rankings;
+    const currentUserRef = useRef<HTMLDivElement | null>(null);
+    const previousIndexRef = useRef<number | null>(null);
+
+    // Tự động scroll tới vị trí của người dùng hiện tại khi thứ hạng (index) thay đổi
+    useEffect(() => {
+        if (!currentUserId) return;
+
+        const newIndex = displayRankings.findIndex((r) => r.userId === currentUserId);
+
+        // Lần đầu thiết lập chỉ lưu index, không cần scroll gấp
+        if (previousIndexRef.current === null) {
+            previousIndexRef.current = newIndex;
+            return;
+        }
+
+        // Nếu index thay đổi (thứ hạng dịch chuyển) thì scroll tới vị trí mới
+        if (newIndex !== -1 && newIndex !== previousIndexRef.current) {
+            previousIndexRef.current = newIndex;
+            if (currentUserRef.current) {
+                currentUserRef.current.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+            }
+        }
+    }, [currentUserId, displayRankings]);
     const getRankIcon = (rank: number) => {
         switch (rank) {
             case 1:
@@ -246,16 +269,17 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
                         const isCurrentUser = currentUserId && ranking.userId === currentUserId;
                         return (
                         <div
+                            ref={isCurrentUser ? currentUserRef : undefined}
                             key={ranking.userId}
                             className={`flex items-center justify-between p-4 rounded-l-2xl transition-all duration-300 ${
                                 ranking.rank === 1
-                                    ? `bg-gradient-to-r from-[#ffc107]/40 to-[#FFD66D]/0 hover:opacity-80 hover:cursor-pointer ${isCurrentUser ? 'min-w-xs w-[345px]' : 'max-w-xs ml-auto'}`
+                                    ? `bg-gradient-to-r from-[#ffc107]/40 to-[#FFD66D]/0 hover:opacity-80 hover:cursor-pointer ${isCurrentUser ? 'ml-auto w-[400px]' : 'max-w-sm ml-auto'}`
                                     : ranking.rank === 2
-                                        ? `bg-gradient-to-r from-[#FF59EE]/60 to-[#7622FF]/0 hover:opacity-80 hover:cursor-pointer ${isCurrentUser ? 'min-w-xs w-[345px]' : 'max-w-xs ml-auto'}`
+                                        ? `bg-gradient-to-r from-[#FF59EE]/60 to-[#7622FF]/0 hover:opacity-80 hover:cursor-pointer ${isCurrentUser ? 'ml-auto w-[400px]' : 'max-w-sm ml-auto'}`
                                         : ranking.rank === 3
-                                            ? `bg-gradient-to-r from-[#66E7FF]/60 to-[#66E7FF]/0 hover:opacity-80 hover:cursor-pointer ${isCurrentUser ? 'min-w-xs w-[345px]' : 'max-w-xs ml-auto'}`
+                                            ? `bg-gradient-to-r from-[#66E7FF]/60 to-[#66E7FF]/0 hover:opacity-80 hover:cursor-pointer ${isCurrentUser ? 'ml-auto w-[400px]' : 'max-w-sm ml-auto'}`
                                             : isCurrentUser
-                                                ? 'bg-white/10 hover:bg-white/5 min-w-sm w-[345px] hover:cursor-pointer' : 'max-w-xs ml-auto hover:cursor-pointer hover:opacity-80'
+                                                ? 'bg-white/10 hover:bg-white/5 ml-auto w-[400px] hover:cursor-pointer' : 'max-w-sm ml-auto hover:cursor-pointer hover:opacity-80'
                                                 // : ranking.isActive ? 'bg-green-900/20 hover:bg-green-900/30' : 'bg-gray-700/50 hover:bg-gray-700/70'
                             }`}
                     >
@@ -267,7 +291,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
                                     <img 
                                         src={ranking.avatar} 
                                         alt={ranking.fullName}
-                                        className="w-full h-full object-fill"
+                                        className="w-full h-full object-cover"
                                         onError={(e) => {
                                             e.currentTarget.style.display = 'none';
                                         }}
@@ -278,7 +302,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
                             )}
                             <div>
                                 <div 
-                                    className="font-medium text-xs mb-1.5 text-white truncate max-w-[100px]"
+                                    className="font-medium text-xs mb-1.5 text-white truncate max-w-[150px]"
                                     style={{
                                         whiteSpace: 'nowrap',
                                         overflow: 'hidden',
@@ -296,29 +320,21 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
                                         />
                                         <span className="font-medium text-xs text-white">{ranking.score}</span>
                                     </span>
-                                    {showLastAnswer && (
-                                        <span>
-                                            {new Date(ranking.lastAnswerAt * 1000).toLocaleTimeString('vi-VN', {
-                                                hour: '2-digit',
-                                                minute: '2-digit'
-                                            })}
-                                        </span>
-                                    )}
                                 </div>
                                 
                             </div>
                         </div>
-                        <div className="flex items-center space-x-5 ml-10">
+                        <div className="ml-auto flex items-center justify-end">
                             {/* Global Rank Info */}
-                            <div className="flex flex-col items-center space-y-0.5">
+                            <div className="flex flex-col items-center justify-center w-16 text-center space-y-0.5">
                                 <img 
                                     src={ranking.globalRank.url} 
                                     alt={ranking.globalRank.title}
-                                    className="w-6 h-6"
+                                    className="w-6 h-6 mx-auto"
                                 />
-                                <div className="text-[10px] text-center" style={{ color: ranking.globalRank.color }}>
-                                        {ranking.globalRank.title}
-                                    </div>
+                                <div className="text-[10px] leading-3 text-center" style={{ color: ranking.globalRank.color }}>
+                                    {ranking.globalRank.title}
+                                </div>
                             </div>
                         </div>
                     </div>
