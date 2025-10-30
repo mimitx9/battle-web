@@ -14,7 +14,7 @@ interface LayoutContentProps {
 export default function LayoutContent({ children }: LayoutContentProps) {
     const pathname = usePathname();
     const { user, isInitialized } = useAuth();
-    const { userBag, fetchUserBag } = useUserBag();
+    const { userBag, fetchUserBag, updateUserBag } = useUserBag();
 
     // Fetch userBag chỉ khi user đã đăng nhập
     useEffect(() => {
@@ -22,6 +22,17 @@ export default function LayoutContent({ children }: LayoutContentProps) {
             fetchUserBag();
         }
     }, [isInitialized, user, fetchUserBag]);
+
+    // Lắng nghe sự kiện cập nhật userBag từ các trang (vd: Shop)
+    useEffect(() => {
+        const handler = (e: any) => {
+            if (e?.detail?.userBag) {
+                updateUserBag(e.detail.userBag);
+            }
+        };
+        window.addEventListener('userBag:update', handler as EventListener);
+        return () => window.removeEventListener('userBag:update', handler as EventListener);
+    }, [updateUserBag]);
 
     // Không hiển thị Header/Footer cho exam pages, waiting-room và hầu hết quiz pages
     // Ngoại lệ: lịch sử quiz cần hiển thị top bar

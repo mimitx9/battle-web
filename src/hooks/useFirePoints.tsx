@@ -7,10 +7,19 @@ interface FirePointsData {
   points: number;
   lastUpdateTime: number;
   lastActiveTime: number;
+  // Thời điểm bắt đầu của ngày hiện tại (ms). Dùng để reset theo ngày
+  dayStartTime?: number;
 }
 
 const POINTS_PER_MINUTE = 10;
+const MAX_DAILY_FIRE_POINTS = 180;
 const ONE_DAY_MS = 24 * 60 * 60 * 1000; // 24 giờ tính bằng milliseconds
+
+const getStartOfTodayMs = (): number => {
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  return now.getTime();
+};
 
 export const useFirePoints = () => {
   const [firePoints, setFirePoints] = useState<number>(0);
@@ -18,11 +27,18 @@ export const useFirePoints = () => {
   const [isClient, setIsClient] = useState<boolean>(false);
 
 
-  // Tính toán đốm lửa dựa trên thời gian
+  // Tính toán đốm lửa dựa trên thời gian, có giới hạn/ngày
   const calculateFirePoints = useCallback((data: FirePointsData): number => {
     const now = Date.now();
     const timeSinceLastUpdate = now - data.lastUpdateTime;
     const timeSinceLastActive = now - data.lastActiveTime;
+    const todayStart = getStartOfTodayMs();
+    const dataDayStart = data.dayStartTime ?? todayStart;
+
+    // Nếu đã sang ngày mới so với mốc dayStart, reset về 0
+    if (now >= dataDayStart + ONE_DAY_MS) {
+      return 0;
+    }
 
     // Nếu user không hoạt động quá 1 ngày, reset về 0
     if (timeSinceLastActive > ONE_DAY_MS) {
@@ -34,16 +50,18 @@ export const useFirePoints = () => {
     
     // Cộng thêm đốm lửa cho mỗi phút
     const additionalPoints = minutesPassed * POINTS_PER_MINUTE;
+    const unclamped = Math.max(0, data.points + additionalPoints);
+    const clamped = Math.min(unclamped, MAX_DAILY_FIRE_POINTS);
     
     console.log('🔥 calculateFirePoints:', {
       timeSinceLastUpdate,
       minutesPassed,
       additionalPoints,
       currentPoints: data.points,
-      result: Math.max(0, data.points + additionalPoints)
+      result: clamped
     });
     
-    return Math.max(0, data.points + additionalPoints);
+    return clamped;
   }, []);
 
   // Cập nhật đốm lửa
@@ -58,11 +76,30 @@ export const useFirePoints = () => {
       const newData: FirePointsData = {
         points: 0,
         lastUpdateTime: now,
-        lastActiveTime: now
+        lastActiveTime: now,
+        dayStartTime: getStartOfTodayMs()
       };
       saveFirePointsData(newData);
       setFirePoints(0);
       console.log('🔥 Created new data:', newData);
+      return;
+    }
+
+    // Migration dữ liệu cũ không có dayStartTime
+    let dayStartTime = data.dayStartTime ?? getStartOfTodayMs();
+
+    // Nếu lastUpdateTime thuộc ngày trước hôm nay, reset theo ngày
+    const startOfToday = getStartOfTodayMs();
+    if (data.lastUpdateTime < startOfToday) {
+      const resetData: FirePointsData = {
+        points: 0,
+        lastUpdateTime: now,
+        lastActiveTime: now,
+        dayStartTime: startOfToday
+      };
+      saveFirePointsData(resetData);
+      setFirePoints(0);
+      console.log('🔥 Daily reset due to new day');
       return;
     }
 
@@ -72,7 +109,8 @@ export const useFirePoints = () => {
       const resetData: FirePointsData = {
         points: 0,
         lastUpdateTime: now,
-        lastActiveTime: now
+        lastActiveTime: now,
+        dayStartTime
       };
       saveFirePointsData(resetData);
       setFirePoints(0);
@@ -91,10 +129,26 @@ export const useFirePoints = () => {
     });
     
     // Cập nhật dữ liệu
+    // Giới hạn theo ngày
+    if (newPoints >= MAX_DAILY_FIRE_POINTS) {
+      // Khi đạt trần, cố định ở 180 cho tới khi sang ngày mới
+      const cappedData: FirePointsData = {
+        points: MAX_DAILY_FIRE_POINTS,
+        lastUpdateTime: now,
+        lastActiveTime: now,
+        dayStartTime
+      };
+      saveFirePointsData(cappedData);
+      setFirePoints(MAX_DAILY_FIRE_POINTS);
+      console.log('🔥 Reached daily cap:', MAX_DAILY_FIRE_POINTS);
+      return;
+    }
+
     const updatedData: FirePointsData = {
       points: newPoints,
       lastUpdateTime: now,
-      lastActiveTime: now
+      lastActiveTime: now,
+      dayStartTime
     };
     
     saveFirePointsData(updatedData);

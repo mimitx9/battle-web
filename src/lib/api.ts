@@ -258,6 +258,30 @@ export const authApiService = {
 
 // Quiz Battle API
 export const quizBattleApiService = {
+    getShoppingMall: async (): Promise<{ meta: { code: number; message: string }, data: Array<{ id: number; itemCode: string; status: string; description: string; quantity: number; priceInKey: number }> }> => {
+        try {
+            console.log('🔍 API: Calling getShoppingMall...');
+            const response = await quizBattleApiInstance.get('/shopping-mall');
+            console.log('🔍 API: getShoppingMall response:', response);
+            return response.data;
+        } catch (error: any) {
+            console.error('❌ API: getShoppingMall failed:', error);
+            console.error('❌ API: Error response:', error.response?.data);
+            console.error('❌ API: Error status:', error.response?.status);
+            throw error;
+        }
+    },
+    consumeItem: async (payload: { itemCode: string; quantity: number }): Promise<{ meta: { code: number; message: string }, data?: { userBag: any } }> => {
+        try {
+            console.log('🔍 API: Calling consumeItem...', payload);
+            const response = await quizBattleApiInstance.post('/consume-item', payload);
+            console.log('🔍 API: consumeItem response:', response);
+            return response.data;
+        } catch (error: any) {
+            console.error('❌ API: consumeItem failed:', error);
+            throw error;
+        }
+    },
     getUserBag: async (): Promise<UserBagResponse> => {
         try {
             console.log('🔍 API: Calling getUserBag...');

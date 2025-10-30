@@ -6,6 +6,7 @@ interface FirePointsData {
   points: number;
   lastUpdateTime: number;
   lastActiveTime: number;
+  dayStartTime?: number;
 }
 
 /**

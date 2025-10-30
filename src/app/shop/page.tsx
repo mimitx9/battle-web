@@ -4,10 +4,34 @@ import React, { useState, useEffect } from 'react';
 import LayoutContent from '@/components/layout/LayoutContent';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { quizBattleApiService } from '@/lib/api';
 
 const ShopPage: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState(45 * 60); // 45 phút tính bằng giây
   const router = useRouter();
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [showConfirm, setShowConfirm] = useState<boolean>(false);
+  const [confirmItem, setConfirmItem] = useState<{
+    id: number;
+    icon: 'hint' | 'snow' | 'blockTop1' | 'blockBehind';
+    title: string;
+    description: string;
+    price: number;
+    gradient: string;
+    tags?: string;
+  } | null>(null);
+  const [shopItems, setShopItems] = useState<Array<{
+    id: number;
+    icon: 'hint' | 'snow' | 'blockTop1' | 'blockBehind';
+    title: string;
+    description: string;
+    price: number;
+    gradient: string;
+    tags?: string;
+  }>>([]);
+  const [currentKey, setCurrentKey] = useState<number>(0);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -17,39 +41,146 @@ const ShopPage: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    const fetchItems = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await quizBattleApiService.getShoppingMall();
+        const bagRes = await quizBattleApiService.getUserBag();
+        if (bagRes?.data?.userBag?.key != null) setCurrentKey(bagRes.data.userBag.key);
+        const items = (res?.data || []).map((it: any) => {
+          const mapIcon = (code: string): 'hint' | 'snow' | 'blockTop1' | 'blockBehind' => {
+            switch (code) {
+              case 'battleHint':
+                return 'hint';
+              case 'battleSnow':
+                return 'snow';
+              case 'battleBlockTop1':
+                return 'blockTop1';
+              case 'battleBlockBehind':
+                return 'blockBehind';
+              default:
+                return 'hint';
+            }
+          };
+
+          const mapGradient = (code: string): string => {
+            switch (code) {
+              case 'battleHint':
+                return 'linear-gradient(to top, #FF8C00, #FFD406)';
+              case 'battleSnow':
+                return 'linear-gradient(to top, #0A0158, #644EFD)';
+              case 'battleBlockTop1':
+                return 'linear-gradient(to top, #25000f,#e320b6)';
+              case 'battleBlockBehind':
+                return 'linear-gradient(to top, #1a2a6c, #b21f1f)';
+              default:
+                return 'linear-gradient(to top, #0A0158, #644EFD)';
+            }
+          };
+
+          return {
+            id: it.id,
+            icon: mapIcon(it.itemCode),
+            title: (it.description || '').toUpperCase(),
+            description: `${it.quantity} lượt`,
+            price: it.priceInKey,
+            gradient: mapGradient(it.itemCode),
+            tags: it.tags,
+          };
+        });
+        setShopItems(items);
+      } catch (e: any) {
+        setError(e?.response?.data?.message || e?.message || 'Đã xảy ra lỗi');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchItems();
+  }, []);
+
+  const openConfirm = (item: { icon: any; title: string; description: string; price: number; gradient: string; tags?: string; id: number }) => {
+    setError(null);
+    setSuccess(null);
+    if (currentKey < item.price) {
+      setError('Không đủ key để mua gói này');
+      return;
+    }
+    setConfirmItem(item as any);
+    setShowConfirm(true);
+  };
+
+  const handlePurchase = async () => {
+    try {
+      setError(null);
+      setSuccess(null);
+      if (!confirmItem) return;
+
+      // Map ngược icon -> itemCode và lấy quantity từ description ("X lượt")
+      const iconToCode = (icon: typeof confirmItem.icon): string => {
+        switch (icon) {
+          case 'hint': return 'battleHint';
+          case 'snow': return 'battleSnow';
+          case 'blockTop1': return 'battleBlockTop1';
+          case 'blockBehind': return 'battleBlockBehind';
+          default: return 'battleHint';
+        }
+      };
+      const quantityMatch = confirmItem.description.match(/(\d+)/);
+      const quantity = quantityMatch ? parseInt(quantityMatch[1], 10) : 1;
+      const payload = { itemCode: iconToCode(confirmItem.icon), quantity };
+
+      const res = await quizBattleApiService.consumeItem(payload);
+      if (res?.meta?.code === 200 && res?.data?.userBag) {
+        const updatedBag = res.data.userBag;
+        if (typeof updatedBag.key === 'number') setCurrentKey(updatedBag.key);
+        // Phát sự kiện để Header cập nhật ngay
+        window.dispatchEvent(new CustomEvent('userBag:update', { detail: { userBag: updatedBag } }));
+        setSuccess('Mua thành công!');
+        setShowConfirm(false);
+        setConfirmItem(null);
+      } else {
+        setError(res?.meta?.message || 'Mua không thành công');
+      }
+    } catch (e: any) {
+      const msg = e?.response?.data?.message || e?.message;
+      setError(msg || 'Đã xảy ra lỗi khi mua');
+      setShowConfirm(false);
+      setConfirmItem(null);
+    }
+  };
+
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
+  if (loading) {
+    return (
+      <LayoutContent>
+        <div className="min-h-screen pt-20 pb-8" style={{ backgroundColor: '#04002A' }}>
+          <div className="max-w-6xl mx-auto px-4 pt-20 text-center text-white" style={{ fontFamily: 'Baloo' }}>
+            Đang tải cửa hàng...
+          </div>
+        </div>
+      </LayoutContent>
+    );
+  }
 
-  const shopItems = [
-    {
-      id: 1,
-      icon: 'hint',
-      title: 'GỢI Ý 50/50',
-      description: '5 lượt',
-      price: 5,
-      gradient: 'linear-gradient(to top, #FF8C00, #FFD406)'
-    },
-    {
-      id: 2,
-      icon: 'snow',
-      title: 'BẢO TOÀN ĐIỂM',
-      description: '1 lượt',
-      price: 10,
-      gradient: 'linear-gradient(to top, #0A0158, #644EFD)'
-    },
-    {
-      id: 3,
-      icon: 'blockTop1',
-      title: 'CHẶN ĐIỂM TOP 1',
-      description: '1 lượt',
-      price: 10,
-      gradient: 'linear-gradient(to top, #25000f,#e320b6)'
-    }
-  ];
+  if (error) {
+    return (
+      <LayoutContent>
+        <div className="min-h-screen pt-20 pb-8" style={{ backgroundColor: '#04002A' }}>
+          <div className="max-w-6xl mx-auto px-4 pt-20 text-center text-red-400" style={{ fontFamily: 'Baloo' }}>
+            {error}
+          </div>
+        </div>
+      </LayoutContent>
+    );
+  }
 
 
   return (
@@ -131,7 +262,24 @@ const ShopPage: React.FC = () => {
                       <path d="M42.2939 47.707C42.9239 47.0773 44.0009 47.5233 44.001 48.4141V53C44.001 54.6568 42.6578 55.9999 41.001 56H36.415C35.5242 56 35.0781 54.9229 35.708 54.293L42.2939 47.707ZM41.001 15C42.6578 15.0001 44.001 16.3432 44.001 18V33.7324C44.0008 35.3891 42.6577 36.7324 41.001 36.7324H37.001C35.3442 36.7324 34.0011 35.3891 34.001 33.7324V27.3418L29.2002 27.3223C26.5337 27.3109 25.2063 24.0867 27.0918 22.2012L34.001 15.292V15H41.001Z" fill="white"/>
                     </svg>
                   )}
-                    </div>
+                  {item.icon === 'blockBehind' && (
+                    <svg width="48" height="48" viewBox="0 0 73 73" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="36.5" cy="36.5" r="31.5" stroke="white" strokeWidth="10"/>
+                      <rect x="56.8262" y="10.103" width="10" height="61.6951" transform="rotate(45 56.8262 10.103)" fill="white"/>
+                      <path d="M42.2939 47.707C42.9239 47.0773 44.0009 47.5233 44.001 48.4141V53C44.001 54.6568 42.6578 55.9999 41.001 56H36.415C35.5242 56 35.0781 54.9229 35.708 54.293L42.2939 47.707ZM41.001 15C42.6578 15.0001 44.001 16.3432 44.001 18V33.7324C44.0008 35.3891 42.6577 36.7324 41.001 36.7324H37.001C35.3442 36.7324 34.0011 35.3891 34.001 33.7324V27.3418L29.2002 27.3223C26.5337 27.3109 25.2063 24.0867 27.0918 22.2012L34.001 15.292V15H41.001Z" fill="white"/>
+                    </svg>
+                  )}
+                </div>
+
+                {/* Tag badge (top-right) */}
+                {item.tags && item.tags.trim() !== '' && (
+                  <div className="absolute top-2 right-2 z-20">
+                    <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-white shadow"
+                          style={{ background: 'linear-gradient(90deg, #FF3D71 0%, #FF8C00 100%)' }}>
+                      {item.tags}
+                    </span>
+                  </div>
+                )}
                 
                 {/* Title */}
                 <h3 className="text-2xl text-white mt-12 mb-4 uppercase tracking-wider" style={{ fontFamily: 'Baloo' }}>
@@ -152,7 +300,7 @@ const ShopPage: React.FC = () => {
                     </div>
                   
                   {/* Purchase Button */}
-                  <button className="w-14 h-14 rounded-full text-white text-sm font-bold tracking-wider transition bg-gradient-to-b from-[#FFD700] to-[#FF8C00] shadow-xl shadow-[#FFBA08]/20 hover:shadow-[#FFBA08]/30 flex items-center justify-center">
+                  <button onClick={() => openConfirm(item)} className="w-14 h-14 rounded-full text-white text-sm font-bold tracking-wider transition bg-gradient-to-b from-[#FFD700] to-[#FF8C00] shadow-xl shadow-[#FFBA08]/20 hover:shadow-[#FFBA08]/30 flex items-center justify-center">
                     <Image src="/logos/battle/shopping.svg" alt="Mua skill" width={20} height={20} />
                     </button>
                 </div>
@@ -160,30 +308,40 @@ const ShopPage: React.FC = () => {
               ))}
             </div>
 
-            {/* Success Bottom Sheet */}
-          <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center cursor-pointer duration-300 transition-all hover:scale-105">
-            <div className="w-full max-w-2xl mx-4 mb-8 pointer-events-auto">
-              <div 
-                className="rounded-3xl p-6 flex items-center justify-between shadow-3xl backdrop-blur-lg"
-                style={{ 
-                  background: 'rgba(2, 42, 0, 0.75)',
-                  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
-                }}
-              >
-                <div className="text-[#96FF00] text-xl flex-1 px-2" style={{ fontFamily: 'Baloo' }}>
-                  Mua thành công! Vô tài khoản coi số lượt nha
+            {/* Confirm Modal */}
+            {showConfirm && confirmItem && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center">
+                {/* Backdrop */}
+                <div className="absolute inset-0 backdrop-blur-sm" style={{ background: 'rgba(0,0,0,0.5)' }} onClick={() => { setShowConfirm(false); setConfirmItem(null); }} />
+                {/* Dialog */}
+                <div className="relative rounded-3xl p-8 w-full max-w-md mx-4 border-4 text-center" style={{ background: 'linear-gradient(to top, rgba(4,0,42,0.9), rgba(255,255,255,0.08))', borderColor: '#252145' }}>
+                  <h3 className="text-2xl text-white mb-6" style={{ fontFamily: 'Baloo' }}>Bạn có chắc mua?</h3>
+                  <div className="flex items-center justify-center gap-4">
+                    <button className="py-3 px-6 rounded-full text-white text-lg font-bold tracking-wider transition bg-gradient-to-b from-[#FFD700] to-[#FF8C00] shadow-xl shadow-[#FFBA08]/20 hover:shadow-[#FFBA08]/30" onClick={handlePurchase}>Yes</button>
+                    <button className="py-3 px-6 rounded-full text-white text-lg font-bold tracking-wider transition bg-white/10 hover:bg-white/20" onClick={() => { setShowConfirm(false); setConfirmItem(null); }}>Không</button>
+                  </div>
                 </div>
-                <button 
-                  className="rounded-full p-3 transition-all duration-200 flex-shrink-0 ml-4"
-                  onClick={() => router.push('/account')}
-                >
-                  <svg width="20" height="20" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M6 12L10 8L6 4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </button>
               </div>
-            </div>
-          </div>
+            )}
+
+            {/* Status message */}
+            {(success || error) && (
+              <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center">
+                <div className="w-full max-w-2xl mx-4 mb-8 pointer-events-auto">
+                  <div className={`rounded-3xl p-6 flex items-center justify-between shadow-3xl backdrop-blur-lg ${success ? 'text-[#96FF00]' : 'text-red-300'}`}
+                      style={{ background: success ? 'rgba(2, 42, 0, 0.75)' : 'rgba(42, 0, 0, 0.75)' }}>
+                    <div className="text-xl flex-1 px-2" style={{ fontFamily: 'Baloo' }}>
+                      {success || error}
+                    </div>
+                    <button className="rounded-full p-3 transition-all duration-200 flex-shrink-0 ml-4" onClick={() => { setSuccess(null); setError(null); }}>
+                      <svg width="20" height="20" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 12L10 8L6 4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </LayoutContent>
