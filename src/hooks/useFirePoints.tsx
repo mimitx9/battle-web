@@ -86,7 +86,7 @@ export const useFirePoints = () => {
     }
 
     // Migration dữ liệu cũ không có dayStartTime
-    let dayStartTime = data.dayStartTime ?? getStartOfTodayMs();
+    const dayStartTime = data.dayStartTime ?? getStartOfTodayMs();
 
     // Nếu lastUpdateTime thuộc ngày trước hôm nay, reset theo ngày
     const startOfToday = getStartOfTodayMs();

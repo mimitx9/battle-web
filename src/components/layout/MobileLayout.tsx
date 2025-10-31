@@ -4,6 +4,8 @@ import React from 'react';
 
 interface MobileLayoutProps {
     children: React.ReactNode;
+    activeTab?: 'rooms' | 'quiz' | 'leaderboard';
+    onTabChange?: (tab: 'rooms' | 'quiz' | 'leaderboard') => void;
 }
 
 const MobileLayout: React.FC<MobileLayoutProps> = ({ children }) => {
