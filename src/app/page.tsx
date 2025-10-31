@@ -1,7 +1,7 @@
 'use client';
 
 import React, {useEffect, useRef, useState} from 'react';
-import {RoomList, LoadingSpinner, CooldownOverlay, QuizCard, Leaderboard, HelpTool} from '@/components/ui';
+import {RoomList, LoadingSpinner, CooldownOverlay, QuizCard, Leaderboard, HelpTool, FullScreenLoading} from '@/components/ui';
 import {QuizCardRef} from '@/components/ui/QuizCard';
 import {useAuth} from '@/hooks/useAuth';
 import {useQuizBattle} from '../hooks/useQuizBattle';
@@ -265,6 +265,17 @@ const HomePage: React.FC = () => {
         // Có thể thêm logic để lưu điểm số hoặc hiển thị kết quả
     };
 
+    // Trạng thái chờ khởi tạo auth để tránh flash sang trang login
+    if (!isInitialized) {
+        return (
+            <FullScreenLoading 
+                isVisible
+                message="Đang khởi tạo phiên đăng nhập..."
+                subMessage="Vui lòng chờ trong giây lát"
+            />
+        );
+    }
+
     // Nếu user đã đăng nhập, hiển thị giao diện 3 cột như mẫu
     if (isInitialized && user) {
         return (
@@ -385,7 +396,7 @@ const HomePage: React.FC = () => {
         );
     }
 
-    // Nếu chưa đăng nhập, hiển thị form đăng nhập trực tiếp
+    // Nếu đã khởi tạo và chưa đăng nhập, hiển thị form đăng nhập
     return (
         <LayoutContent>
             <div className="min-h-screen">
