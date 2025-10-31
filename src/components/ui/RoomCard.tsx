@@ -13,6 +13,9 @@ interface RoomCardProps {
 const RoomCard: React.FC<RoomCardProps> = ({ room, isSelected = false, onClick }) => {
   const isFull = room.currentPlayers >= room.maxPlayers;
   const progressPercentage = (room.currentPlayers / room.maxPlayers) * 100;
+  const topImages = (room.topUniversityImages || []).filter((img) => typeof img === 'string' && img.trim().length > 0);
+  const mainIconSrc = topImages.length > 0 ? topImages[0] : room.categoryIcon;
+  const isExternalIcon = typeof mainIconSrc === 'string' && /^(http|https):\/\//.test(mainIconSrc);
 
   return (
     <div
@@ -31,20 +34,26 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, isSelected = false, onClick }
           className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
           style={{ backgroundColor: room.categoryBackgroundColor }}
         >
-          {room.categoryIcon ? (
+          {mainIconSrc ? (
             <div className="w-12 h-12 rounded-full overflow-hidden">
-              <Image
-                src={room.categoryIcon}
-                alt={room.categoryTitle}
-                width={48}
-                height={48}
-                className="w-12 h-12 object-cover"
-                style={{ 
-                  objectPosition: 'center -13.5px',
-                  transform: 'scale(1.5)',
-                  transformOrigin: 'center center'
-                }}
-              />
+              {isExternalIcon ? (
+                <img
+                  src={mainIconSrc}
+                  alt={room.categoryTitle}
+                  width={48}
+                  height={48}
+                  loading="lazy"
+                  className="w-12 h-12 object-cover"
+                />
+              ) : (
+                <Image
+                  src={mainIconSrc}
+                  alt={room.categoryTitle}
+                  width={48}
+                  height={48}
+                  className="w-12 h-12 object-cover"
+                />
+              )}
             </div>
           ) : (
             <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center">
@@ -79,6 +88,19 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, isSelected = false, onClick }
                 </span>
               </div>
             </div>
+
+            {/* Top universities icons - outside progress bar on the far right */}
+            {room.currentPlayers > 0 && topImages.length > 0 && (
+              <div className="pointer-events-none absolute top-1/2 -translate-y-1/2 -right-3 z-10">
+                <div className="flex -space-x-2">
+                  {topImages.slice(0, 3).map((img, idx) => (
+                    <div key={idx} className="w-6 h-6 rounded-full overflow-hidden ring-2 ring-white/70 shadow-md bg-white/10">
+                      <img src={img} alt={`uni-${idx}`} width={24} height={24} loading="lazy" className="w-6 h-6 object-cover" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

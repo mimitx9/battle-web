@@ -93,11 +93,11 @@ export const useQuizBattle = (onScoreChange?: (scoreChange: number) => void): Us
     const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const lastConnectionAttemptRef = useRef<number>(0);
     
-    // WebSocket ping mechanisms - TẮT để chỉ read-only
+    // WebSocket ping mechanisms - BẬT để duy trì kết nối
     const globalPing = useWebSocketPing({ 
         interval: 10000, 
-        enabled: false, // Tắt ping mechanism
-        debug: process.env.NODE_ENV === 'development' // Chỉ debug trong development
+        enabled: true,
+        debug: process.env.NODE_ENV === 'development'
     });
     const roomPing = useWebSocketPing({ 
         interval: 10000, 
@@ -366,11 +366,14 @@ export const useQuizBattle = (onScoreChange?: (scoreChange: number) => void): Us
                     
                     switch (data.type) {
                         case 'global_room_status':
-                            // Update rooms list từ WebSocket
-                            if (data.data && data.data.rooms) {
-                                console.log('🔍 Received global_room_status:', data.data.rooms);
-                                setRooms(data.data.rooms);
-                                roomsRef.current = data.data.rooms; // Update ref
+                            // Update rooms list từ WebSocket (hỗ trợ cả 2 dạng payload)
+                            {
+                                const roomsPayload = (data && data.data && data.data.rooms) ? data.data.rooms : data.rooms;
+                                if (Array.isArray(roomsPayload)) {
+                                    console.log('🔍 Received global_room_status:', roomsPayload);
+                                    setRooms(roomsPayload);
+                                    roomsRef.current = roomsPayload;
+                                }
                             }
                             break;
                         case 'room_updated':

@@ -114,10 +114,13 @@ export const useGlobalWebSocket = (): UseGlobalWebSocketReturn => {
                     
                     switch (data.type) {
                         case 'global_room_status':
-                            // Update rooms list từ WebSocket
-                            if (data.data && data.data.rooms) {
-                                console.log('🔍 Received global_room_status:', data.data.rooms);
-                                setRooms(data.data.rooms);
+                            // Update rooms list từ WebSocket (hỗ trợ cả 2 dạng payload)
+                            {
+                                const roomsPayload = (data && data.data && data.data.rooms) ? data.data.rooms : data.rooms;
+                                if (Array.isArray(roomsPayload)) {
+                                    console.log('🔍 Received global_room_status:', roomsPayload);
+                                    setRooms(roomsPayload);
+                                }
                             }
                             break;
                         case 'room_updated':

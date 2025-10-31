@@ -25,7 +25,7 @@ interface Question {
 interface QuizCardProps {
     questions?: Question[];
     onSubmitAnswer?: (questionId: number, answerId: number, isCorrect: boolean, answerTime: number) => void;
-    submitAnswer?: (questionId: number, isCorrect: boolean, answerTime: number, difficulty: string, insane?: boolean) => void;
+    submitAnswer?: (questionId: number, isCorrect: boolean, answerTime: number, difficulty: string, insane?: boolean, isSpecial?: boolean) => void;
     onHintUsed?: (questionId: number) => void; // Callback khi sử dụng hint
     scoreChange?: number; // Điểm số thay đổi từ server response
     onQuestionChange?: (questionId: number) => void;
@@ -64,6 +64,11 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
     const [showToolEffect, setShowToolEffect] = useState(false);
     const [currentToolType, setCurrentToolType] = useState<string>('');
     const [isProtectedBySnow, setIsProtectedBySnow] = useState(false); // Trạng thái bảo vệ bởi battleSnow
+    const [correctStreak, setCorrectStreak] = useState(0); // Đếm số câu đúng liên tiếp
+    const [isSpecialQuestion, setIsSpecialQuestion] = useState(false); // Đang ở giao diện câu đặc biệt
+    const [specialTimerId, setSpecialTimerId] = useState<ReturnType<typeof setTimeout> | null>(null); // Timer 15s của câu đặc biệt
+    const [specialIntervalId, setSpecialIntervalId] = useState<ReturnType<typeof setInterval> | null>(null); // Interval đếm giây UI
+    const [specialSecondsLeft, setSpecialSecondsLeft] = useState(15); // Số giây còn lại hiển thị cho câu đặc biệt
 
 
     // Mock questions for demo
@@ -127,6 +132,15 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
         setShowToolEffect(false);
         setCurrentToolType('');
         setIsProtectedBySnow(false); // Reset trạng thái bảo vệ khi questions thay đổi
+        setCorrectStreak(0);
+        setIsSpecialQuestion(false);
+        setSpecialSecondsLeft(15);
+        if (specialTimerId) {
+            clearTimeout(specialTimerId);
+        }
+        if (specialIntervalId) {
+            clearInterval(specialIntervalId);
+        }
         
         // Note: Start sound is now handled by RoomTransitionLoader when entering room
     }, [questionsToUse]);
@@ -143,16 +157,70 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
         setShowToolEffect(false);
         setCurrentToolType('');
         setIsProtectedBySnow(false); // Reset trạng thái bảo vệ khi chuyển sang câu hỏi tiếp theo
+        setIsSpecialQuestion(false); // Tắt giao diện đặc biệt khi sang câu mới
+        setSpecialSecondsLeft(15);
+        if (specialTimerId) {
+            clearTimeout(specialTimerId);
+        }
+        if (specialIntervalId) {
+            clearInterval(specialIntervalId);
+        }
         
         // Note: Start sound is now handled by RoomTransitionLoader when entering room
         
         // Play insane sound if this is a hot question
         const currentQuestion = questionsToUse[currentQuestionIndex];
-        if (currentQuestion?.isHotQuestion) {
+        if ((currentQuestion?.isHotQuestion || false)) {
             // Delay the insane sound slightly to let start sound play first
             setTimeout(() => {
                 playInsaneSound();
             }, 500);
+        }
+
+        // Tạm thời: nếu streak hiện tại là số lẻ (1,3,5,...) => câu này (2,4,6,...) là đặc biệt
+        if (correctStreak > 0 && correctStreak % 10 === 9) {
+            setIsSpecialQuestion(true);
+            setSpecialSecondsLeft(15);
+            const interval = setInterval(() => {
+                setSpecialSecondsLeft(prev => (prev > 0 ? prev - 1 : 0));
+            }, 1000);
+            setSpecialIntervalId(interval);
+            const id = setTimeout(() => {
+                const q = questionsToUse[currentQuestionIndex];
+                if (!q) return;
+
+                // Hết 15s chưa trả lời: submit sai và hiển thị kết quả trước khi chuyển câu
+                onSubmitAnswer(q.questionId, -1 as unknown as number, false, 15000);
+                if (submitAnswer) {
+                    const difficulty = 'medium';
+                    const isInsane = q.isHotQuestion || false;
+                    submitAnswer(q.questionId, false, 15000, difficulty, isInsane, true);
+                }
+                setCorrectStreak(0);
+                if (specialIntervalId) {
+                    clearInterval(specialIntervalId);
+                }
+                // Hiển thị kết quả bị trừ điểm
+                setIsCorrect(false);
+                setShowResult(true);
+                playWrongSound();
+                
+                setTimeout(() => {
+                    setIsDrawingCard(true);
+                    if (onTransitionChange) onTransitionChange(true);
+                    playStartSound();
+                    if (currentQuestionIndex < questionsToUse.length - 1) {
+                        setCurrentQuestionIndex(prev => prev + 1);
+                    } else {
+                        setCurrentQuestionIndex(0);
+                    }
+                    setTimeout(() => {
+                        setIsDrawingCard(false);
+                        if (onTransitionChange) onTransitionChange(false);
+                    }, 300);
+                }, 2000);
+            }, 15000);
+            setSpecialTimerId(id);
         }
 
         // Thông báo câu hỏi hiện tại thay đổi
@@ -208,6 +276,16 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
         setIsCorrect(correct);
         setShowResult(true);
 
+        // Dừng đồng hồ câu đặc biệt (nếu có)
+        if (specialTimerId) {
+            clearTimeout(specialTimerId);
+            setSpecialTimerId(null);
+        }
+        if (specialIntervalId) {
+            clearInterval(specialIntervalId);
+            setSpecialIntervalId(null);
+        }
+
         // Play correct or wrong sound
         if (correct) {
             playCorrectSound();
@@ -229,6 +307,17 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
             setScore(prev => prev + 1);
         }
 
+        // Cập nhật streak; câu đặc biệt là câu thứ 10 (bật ở effect khi vào câu)
+        setCorrectStreak(prev => {
+            const next = correct ? prev + 1 : 0;
+            if (!correct) {
+                // Sai thì reset streak
+                return 0;
+            }
+            // Nếu vượt quá 10 tiếp tục duy trì streak
+            return next;
+        });
+
         // Call onSubmitAnswer with answer time
         onSubmitAnswer(currentQuestion.questionId, answerId, correct, answerTime);
 
@@ -236,9 +325,9 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
         if (submitAnswer) {
             // Determine difficulty based on question or use default
             const difficulty = 'medium'; // Default difficulty
-            // Gửi thêm thông tin insane=true nếu là Hot question
+            // Gửi thêm thông tin insane=true nếu là Hot question (random), độc lập với câu đặc biệt
             const isInsane = currentQuestion.isHotQuestion || false;
-            submitAnswer(currentQuestion.questionId, correct, answerTime, difficulty, isInsane);
+            submitAnswer(currentQuestion.questionId, correct, answerTime, difficulty, isInsane, isSpecialQuestion);
         }
 
         // Delay before card draw animation
@@ -400,6 +489,7 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
     }
 
     const currentQuestion = questionsToUse[currentQuestionIndex];
+    const isInsaneQuestion = currentQuestion?.isHotQuestion || false;
 
     return (
         <div className="w-full h-full flex items-center justify-center md:px-12">
@@ -413,6 +503,24 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
 
                 {/* Main Card - Active */}
                 <div className={`relative bg-white rounded-3xl shadow-2xl overflow-hidden h-[calc(100%-28px)]`}>
+                    {/* Special Question 15s Running Border + Countdown */}
+                    {isSpecialQuestion && (
+                        <>
+                            <svg className="pointer-events-none absolute inset-0 z-20" viewBox="0 0 1000 2000" preserveAspectRatio="none">
+                                <defs>
+                                    <linearGradient id="specialGradient" x1="0" y1="0" x2="1" y2="1">
+                                        <stop offset="0%" stopColor="#ff8a00" />
+                                        <stop offset="50%" stopColor="#ffd700" />
+                                        <stop offset="100%" stopColor="#00e0ff" />
+                                    </linearGradient>
+                                </defs>
+                                <rect x="10" y="10" width="980" height="1980" rx="120" ry="520" fill="none" stroke="url(#specialGradient)" strokeWidth="20" className="special-border-svg" vectorEffect="non-scaling-stroke" pathLength="1000" />
+                            </svg>
+                            <div className="absolute top-3 left-3 z-30 bg-black/60 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                                {specialSecondsLeft}s
+                            </div>
+                        </>
+                    )}
                     
                     {/* BattleSnow Protection Overlay */}
                     {isProtectedBySnow && (
@@ -466,7 +574,7 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
 
                     <div className="relative z-10 px-6 py-8 sm:px-8 sm:py-12 flex flex-col h-full overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white">
                         {/* Hot Question Tag */}
-                        {currentQuestion.isHotQuestion && (
+                        {isInsaneQuestion && (
                             <div className={`mb-4 animate-bounce transition-all duration-500 ease-out ${
                                 isDrawingCard ? 'opacity-0 transform translate-y-4' : 'opacity-100 transform translate-y-0'
                             }`}>
@@ -598,7 +706,11 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
                                      backgroundClip: 'text',
                                      animation: showResult ? 'popup 0.6s ease-out' : 'none'
                                 }}>
-{showResult ? (isCorrect ? (typeof scoreChange === 'number' && scoreChange > 0 ? `+${scoreChange}` : '') : '0') : ''}
+{showResult ? (
+    typeof scoreChange === 'number'
+        ? (scoreChange > 0 ? `+${scoreChange}` : `${scoreChange}`)
+        : (isCorrect ? '' : '0')
+) : ''}
                             </div>
                     </div>
                 )}
@@ -633,6 +745,17 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
                 .animate-ping-overlay {
                     animation: ping-overlay 800ms ease-out;
                     will-change: transform, opacity;
+                }
+
+                /* Special running border for 15s */
+                .special-border-svg {
+                    stroke-dasharray: 120 280; /* dash + gap */
+                    stroke-linecap: round;
+                    animation: dash-move 1.2s linear infinite;
+                    filter: drop-shadow(0 0 6px rgba(255, 200, 0, 0.6));
+                }
+                @keyframes dash-move {
+                    to { stroke-dashoffset: -400; }
                 }
             `}</style>
         </div>

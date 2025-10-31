@@ -107,11 +107,11 @@ const AccountPage: React.FC = () => {
                   </div>
                   
                 {/* Star icon positioned at bottom center of avatar */}
-                {globalRank?.url && (
+                {(user?.universityImage) && (
                   <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2">
                     <img 
-                      src={globalRank.url} 
-                      alt="Ranking Icon" 
+                      src={user.universityImage} 
+                      alt={user.university || 'University'} 
                       className="w-8 h-8"
                     />
                   </div>
@@ -120,11 +120,7 @@ const AccountPage: React.FC = () => {
                 
                 
                 {/* Level Info */}
-                <div className="flex items-center my-2">
-                  <span className="text-white text-xs font-medium">
-                    {globalRank?.title || '--. ---'}
-                  </span>
-                </div>
+                <div className="flex items-center my-2" />
               </div>
             </div>
           </div>

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { masterApiService } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 import Button from '@/components/ui/Button';
 import Image from 'next/image';
@@ -15,6 +16,7 @@ const registerSchema = z.object({
   phone: z.string().min(1, 'Số điện thoại là bắt buộc'),
   fullName: z.string().min(1, 'Họ tên là bắt buộc'),
   password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
+  universityId: z.string().min(1, 'Vui lòng chọn trường'),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -30,15 +32,37 @@ const HomeLoginForm: React.FC<HomeLoginFormProps> = ({ onSuccess }) => {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isRegisterMode, setIsRegisterMode] = useState(false);
+  const [universities, setUniversities] = useState<Array<{ text: string; code: string; image?: string }>>([]);
+  const [loadingUniversities, setLoadingUniversities] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedUniversity, setSelectedUniversity] = useState<{ text: string; code: string; image?: string } | null>(null);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
+    setValue,
   } = useForm<LoginFormData | RegisterFormData>({
     resolver: zodResolver(isRegisterMode ? registerSchema : loginSchema),
   });
+
+  useEffect(() => {
+    const fetchUniversities = async () => {
+      try {
+        setLoadingUniversities(true);
+        const res = await masterApiService.getUniversities();
+        setUniversities(res.data || []);
+      } catch (e) {
+        // fallback: để trống, user sẽ không thể submit do schema bắt buộc
+        setUniversities([]);
+      } finally {
+        setLoadingUniversities(false);
+      }
+    };
+    fetchUniversities();
+  }, []);
 
   const onSubmit = async (data: LoginFormData | RegisterFormData) => {
     setIsLoading(true);
@@ -50,12 +74,17 @@ const HomeLoginForm: React.FC<HomeLoginFormProps> = ({ onSuccess }) => {
         const registerData = data as RegisterFormData;
         const username = registerData.phone;
         const email = `${username}@no-email.local`;
+        const universityIdValue = Number((registerData as any).universityId);
+        if (Number.isNaN(universityIdValue)) {
+          throw new Error('Vui lòng chọn trường hợp lệ');
+        }
 
         await registerUser({
           email,
           username,
           password: registerData.password,
           fullName: registerData.fullName,
+          universityId: universityIdValue,
         });
       } else {
         // Xử lý đăng nhập
@@ -147,6 +176,60 @@ const HomeLoginForm: React.FC<HomeLoginFormProps> = ({ onSuccess }) => {
               {(errors as any).fullName && (
                 <span className="text-red-500 text-xs mt-1 block">{(errors as any).fullName.message}</span>
               )}
+              </div>
+            )}
+
+            {isRegisterMode && (
+              <div className="mb-5 relative">
+                {/* Hiển thị như input */}
+                <button
+                  type="button"
+                  className={`w-full text-left px-8 py-5 rounded-full text-base bg-white box-border transition focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed border-2 ${((errors as any).universityId) ? 'border-red-500 focus:ring-2 focus:ring-red-100' : 'border-gray-100 focus:border-[#FFBA08] focus:ring-2 focus:ring-[#FFBA08]/10'}`}
+                  onClick={() => setIsDropdownOpen((v) => !v)}
+                  disabled={isLoading || loadingUniversities}
+                >
+                  {selectedUniversity ? selectedUniversity.text : (loadingUniversities ? 'Đang tải danh sách trường...' : 'Chọn trường đại học')}
+                </button>
+
+                {/* Dropdown panel */}
+                {isDropdownOpen && (
+                  <div className="absolute z-20 mt-2 w-full bg-white rounded-2xl shadow-lg border border-gray-100">
+                    <div className="p-3 border-b border-gray-100">
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Tìm tên trường..."
+                        className="w-full px-4 py-3 rounded-full text-sm bg-white border-2 border-gray-100 focus:border-[#FFBA08] focus:ring-2 focus:ring-[#FFBA08]/10 outline-none"
+                      />
+                    </div>
+                    <div className="max-h-64 overflow-auto">
+                      {universities
+                        .filter((u) => u.text.toLowerCase().includes(searchQuery.toLowerCase()))
+                        .map((u) => (
+                          <div
+                            key={u.code}
+                            className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-sm"
+                            onClick={() => {
+                              setSelectedUniversity(u);
+                              setValue('universityId' as any, u.code, { shouldValidate: true, shouldDirty: true });
+                              setIsDropdownOpen(false);
+                            }}
+                          >
+                            {u.text}
+                          </div>
+                        ))}
+                      {universities.filter((u) => u.text.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
+                        <div className="px-4 py-6 text-center text-gray-400 text-sm">Không tìm thấy trường phù hợp</div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {/* input ẩn để RHF nắm giá trị */}
+                <input type="hidden" {...register('universityId')} />
+                {(errors as any).universityId && (
+                  <span className="text-red-500 text-xs mt-1 block">{(errors as any).universityId.message}</span>
+                )}
               </div>
             )}
 

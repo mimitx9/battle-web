@@ -15,16 +15,24 @@ const RoomList: React.FC<RoomListProps> = ({ rooms, currentRoom, onRoomClick }) 
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isHoveringContent, setIsHoveringContent] = useState(false);
 
-  // Sắp xếp rooms: room đang join lên đầu, các room khác theo thứ tự ban đầu
+  // Sắp xếp rooms: room đang join lên đầu, các room còn lại theo hoạt động
+  // Ưu tiên: có người chơi trước, rồi currentPlayers giảm dần, sau đó theo tên
   const sortedRooms = React.useMemo(() => {
-    if (!currentRoom) return rooms;
-    
-    const currentRoomIndex = rooms.findIndex(room => room.roomCode === currentRoom.roomCode);
-    if (currentRoomIndex === -1) return rooms;
-    
-    const currentRoomItem = rooms[currentRoomIndex];
-    const otherRooms = rooms.filter((_, index) => index !== currentRoomIndex);
-    
+    const baseSorted = [...rooms].sort((a, b) => {
+      const aActive = a.currentPlayers > 0 ? 1 : 0;
+      const bActive = b.currentPlayers > 0 ? 1 : 0;
+      if (aActive !== bActive) return bActive - aActive; // đang active trước
+      if (a.currentPlayers !== b.currentPlayers) return b.currentPlayers - a.currentPlayers; // đông người hơn trước
+      return a.categoryTitle.localeCompare(b.categoryTitle); // tie-breaker ổn định
+    });
+
+    if (!currentRoom) return baseSorted;
+
+    const currentIdx = baseSorted.findIndex(room => room.roomCode === currentRoom.roomCode);
+    if (currentIdx === -1) return baseSorted;
+
+    const currentRoomItem = baseSorted[currentIdx];
+    const otherRooms = baseSorted.filter((_, index) => index !== currentIdx);
     return [currentRoomItem, ...otherRooms];
   }, [rooms, currentRoom]);
 

@@ -264,6 +264,7 @@ export interface QuizRoom {
     isActive: boolean;
     maxPlayers: number;
     currentPlayers: number;
+    topUniversityImages?: string[];
 }
 
 export interface QuizRoomsResponse {
@@ -390,6 +391,7 @@ export interface SubmitAnswerMessage {
     isCorrect: boolean;
     answerTime: number;
     difficulty: string;
+    isSpecial?: string;
     insane?: boolean; // Thêm trường insane cho Hot question
 }
 

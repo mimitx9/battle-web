@@ -31,6 +31,7 @@ const AUTH_API_BASE_URL = `${BASE_URL}/v1/account`;
 const USER_PROFILE_URL = `${BASE_URL}/v1/user`;
 const QUIZ_API_BASE_URL = `${BASE_URL}/v1/test`;
 const QUIZ_BATTLE_API_BASE_URL = `${BASE_URL}/v1/quiz-battle`;
+const MASTER_API_BASE_URL = `${BASE_URL}/v1/master`;
 
 const api = axios.create({
     baseURL: API_BASE_URL,
@@ -67,6 +68,15 @@ const quizApiInstance = axios.create({
 
 const quizBattleApiInstance = axios.create({
     baseURL: QUIZ_BATTLE_API_BASE_URL,
+    headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'site': 'BATTLE',
+    },
+});
+
+const masterApiInstance = axios.create({
+    baseURL: MASTER_API_BASE_URL,
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -119,6 +129,15 @@ quizBattleApiInstance.interceptors.request.use((config) => {
     return config;
 });
 
+masterApiInstance.interceptors.request.use((config) => {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    config.headers.site = 'BATTLE';
+    return config;
+});
+
 // Add response interceptors để handle 401 errors
 api.interceptors.response.use(
     (response) => response,
@@ -158,6 +177,17 @@ quizBattleApiInstance.interceptors.response.use(
     (error) => {
         if (error.response?.status === 401) {
             console.log('🔍 Quiz Battle API: 401 error detected, redirecting to login');
+            handle401Error();
+        }
+        return Promise.reject(error);
+    }
+);
+
+masterApiInstance.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response?.status === 401) {
+            console.log('🔍 Master API: 401 error detected, redirecting to login');
             handle401Error();
         }
         return Promise.reject(error);
@@ -225,19 +255,22 @@ export const authApiService = {
             console.log('🔍 API: getProfile data:', response.data);
 
             // Xử lý response linh hoạt - có thể là ApiResponse hoặc trực tiếp User
-            let userData: User;
+            let userData: any;
             if (response.data.data) {
-                // Nếu có cấu trúc ApiResponse
                 userData = response.data.data;
                 console.log('🔍 API: Using nested data structure');
             } else {
-                // Nếu response trực tiếp là User data
                 userData = response.data;
                 console.log('🔍 API: Using direct data structure');
             }
 
+            if (userData && userData.rank && !userData.globalRank) {
+                userData.globalRank = userData.rank;
+                delete userData.rank;
+            }
+
             console.log('🔍 API: Final user data:', userData);
-            return userData;
+            return userData as User;
         } catch (error: any) {
             console.error('❌ API: getProfile failed:', error);
             console.error('❌ API: Error response:', error.response?.data);
@@ -358,6 +391,29 @@ export const quizBattleApiService = {
                     }
                 }
             };
+        }
+    },
+};
+
+// Master API
+export const masterApiService = {
+    getUniversities: async (): Promise<{
+        meta: { code: number; message: string };
+        pagination: { pageSize: number; pageOffset: number; totalRecords: number; totalPages: number };
+        data: Array<{ text: string; code: string; image?: string }>;
+    }> => {
+        try {
+            console.log('🔍 API: Calling getUniversities...');
+            const response = await masterApiInstance.get('/list', {
+                params: { filterType: 'UNIVERSITY' },
+            });
+            console.log('🔍 API: getUniversities response:', response);
+            return response.data;
+        } catch (error: any) {
+            console.error('❌ API: getUniversities failed:', error);
+            console.error('❌ API: Error response:', error.response?.data);
+            console.error('❌ API: Error status:', error.response?.status);
+            throw error;
         }
     },
 };
