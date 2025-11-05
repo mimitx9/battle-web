@@ -369,6 +369,8 @@ export interface RankingEntry {
     fullName: string;
     avatar?: string;
     globalRank: GlobalRank;
+    universityImage: string;
+    university: string;
     userBag: UserBag;
     rank: number;
     isActive: boolean;

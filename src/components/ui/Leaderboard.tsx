@@ -268,65 +268,89 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
                     {displayRankings.map((ranking) => {
                         const isCurrentUser = currentUserId && ranking.userId === currentUserId;
                         return (
-                        <div
-                            ref={isCurrentUser ? currentUserRef : undefined}
-                            key={ranking.userId}
-                            className={`flex items-center justify-between p-4 rounded-l-2xl transition-all duration-300 ${
-                                ranking.rank === 1
-                                    ? `bg-gradient-to-r from-[#ffc107]/40 to-[#FFD66D]/0 hover:opacity-80 hover:cursor-pointer ${isCurrentUser ? 'ml-auto w-[400px]' : 'max-w-sm ml-auto'}`
-                                    : ranking.rank === 2
-                                        ? `bg-gradient-to-r from-[#FF59EE]/60 to-[#7622FF]/0 hover:opacity-80 hover:cursor-pointer ${isCurrentUser ? 'ml-auto w-[400px]' : 'max-w-sm ml-auto'}`
-                                        : ranking.rank === 3
-                                            ? `bg-gradient-to-r from-[#66E7FF]/60 to-[#66E7FF]/0 hover:opacity-80 hover:cursor-pointer ${isCurrentUser ? 'ml-auto w-[400px]' : 'max-w-sm ml-auto'}`
-                                            : isCurrentUser
-                                                ? 'bg-white/10 hover:bg-white/5 ml-auto w-[400px] hover:cursor-pointer' : 'max-w-sm ml-auto hover:cursor-pointer hover:opacity-80'
-                                                // : ranking.isActive ? 'bg-green-900/20 hover:bg-green-900/30' : 'bg-gray-700/50 hover:bg-gray-700/70'
-                            }`}
-                    >
-                        <div className="flex items-center space-x-5">
-                            {getRankIcon(ranking.rank)}
-                            {/* Avatar */}
-                            {ranking.avatar ? (
-                                <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-white">
-                                    <img 
-                                        src={ranking.avatar} 
-                                        alt={ranking.fullName}
-                                        className="w-full h-full object-cover"
-                                        onError={(e) => {
-                                            e.currentTarget.style.display = 'none';
-                                        }}
-                                    />
-                                </div>
-                            ) : (
-                                getDefaultAvatar(ranking.fullName)
-                            )}
-                            <div>
-                                <div 
-                                    className="font-medium text-xs mb-1.5 text-white truncate max-w-[150px]"
-                                    style={{
-                                        whiteSpace: 'nowrap',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis'
-                                    }}
-                                >
-                                    {ranking.fullName}
-                                </div>
-                                <div className="text-xs text-gray-300 flex items-center space-x-2">
+                            <div
+                                ref={isCurrentUser ? currentUserRef : undefined}
+                                key={ranking.userId}
+                                className={`flex items-center justify-between p-4 rounded-l-2xl transition-all duration-300 ${
+                                    ranking.rank === 1
+                                        ? `bg-gradient-to-r from-[#ffc107]/40 to-[#FFD66D]/0 hover:opacity-80 hover:cursor-pointer ${isCurrentUser ? 'ml-auto w-[400px]' : 'max-w-sm ml-auto'}`
+                                        : ranking.rank === 2
+                                            ? `bg-gradient-to-r from-[#FF59EE]/60 to-[#7622FF]/0 hover:opacity-80 hover:cursor-pointer ${isCurrentUser ? 'ml-auto w-[400px]' : 'max-w-sm ml-auto'}`
+                                            : ranking.rank === 3
+                                                ? `bg-gradient-to-r from-[#66E7FF]/60 to-[#66E7FF]/0 hover:opacity-80 hover:cursor-pointer ${isCurrentUser ? 'ml-auto w-[400px]' : 'max-w-sm ml-auto'}`
+                                                : isCurrentUser
+                                                    ? 'bg-white/10 hover:bg-white/5 ml-auto w-[400px] hover:cursor-pointer' : 'max-w-sm ml-auto hover:cursor-pointer hover:opacity-80'
+                                    // : ranking.isActive ? 'bg-green-900/20 hover:bg-green-900/30' : 'bg-gray-700/50 hover:bg-gray-700/70'
+                                }`}
+                            >
+                                <div className="flex items-center space-x-5">
+                                    {getRankIcon(ranking.rank)}
+                                    {/* Avatar */}
+                                    {ranking.avatar ? (
+                                        <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-white">
+                                            <img
+                                                src={ranking.avatar}
+                                                alt={ranking.fullName}
+                                                className="w-full h-full object-cover"
+                                                onError={(e) => {
+                                                    e.currentTarget.style.display = 'none';
+                                                }}
+                                            />
+                                        </div>
+                                    ) : (
+                                        getDefaultAvatar(ranking.fullName)
+                                    )}
+                                    <div>
+                                        <div
+                                            className="font-medium text-xs mb-1.5 text-white truncate max-w-[150px]"
+                                            style={{
+                                                whiteSpace: 'nowrap',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis'
+                                            }}
+                                        >
+                                            {ranking.fullName}
+                                        </div>
+                                        <div className="text-xs text-gray-300 flex items-center space-x-2">
                                     <span className="flex items-start space-x-1">
-                                        <img 
-                                            src="/logos/battle.svg" 
-                                            alt="Battle" 
+                                        <img
+                                            src="/logos/battle.svg"
+                                            alt="Battle"
                                             className="w-5 h-5"
                                         />
                                         <span className="font-medium text-xs text-white">{ranking.score}</span>
                                     </span>
+                                        </div>
+
+                                    </div>
                                 </div>
-                                
+                                <div className="ml-auto flex items-center justify-end">
+                                    {/* University badge (replaces global rank) with tooltip */}
+                                    {ranking.universityImage && (
+                                        <div
+                                            className="relative group flex flex-col items-center justify-center w-16 text-center">
+                                            <img
+                                                src={ranking.universityImage}
+                                                alt={ranking.university || 'University'}
+                                                className="w-16 h-16 mx-auto rounded"
+                                            />
+                                            {/* Tooltip */}
+                                            {ranking.university && (
+                                                <div
+                                                    className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 p-2 text-white text-[10px] font-medium rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap"
+                                                    style={{background: 'linear-gradient(to top, rgb(14, 4, 106),rgb(7, 1, 60))'}}
+                                                >
+                                                    {ranking.university}
+                                                    {/* Arrow */}
+                                                    <div
+                                                        className="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent"
+                                                        style={{borderBottomColor: 'rgb(7, 1, 60)'}}></div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                        <div className="ml-auto flex items-center justify-end">
-                        </div>
-                    </div>
                         );
                     })}
                 </div>
