@@ -351,46 +351,11 @@ export const quizBattleApiService = {
 
     getUserRanking: async (): Promise<{ data: { globalRank: GlobalRank } }> => {
         try {
-            console.log('🔍 API: Calling getUserRanking...');
             const response = await quizBattleApiInstance.get<{ data: { globalRank: GlobalRank } }>('/user-ranking');
-            
-            console.log('🔍 API: getUserRanking response:', response);
-            console.log('🔍 API: getUserRanking data:', response.data);
-            
             return response.data;
         } catch (error: any) {
             console.error('❌ API: getUserRanking failed:', error);
-            console.error('❌ API: Error response:', error.response?.data);
-            console.error('❌ API: Error status:', error.response?.status);
-            
-            // Return mock data if API fails
-            console.log('🔍 API: Returning mock ranking data...');
-            return {
-                data: {
-                    globalRank: {
-                        userId: 0,
-                        url: "https://storage.googleapis.com/faquiz2/rankiCon/Fe3.png",
-                        title: "Lv 10. Vàng V",
-                        color: "#FFD700",
-                        level: 10,
-                        levelId: 5,
-                        extraData: {
-                            currentCountAchieve: 250,
-                            currentCountLose: 23,
-                            currentCountWin: 1,
-                            nextRank: {
-                                url: "https://storage.googleapis.com/faquiz2/rankiCon/Fe2.png",
-                                title: "Lv 11. Vàng IV",
-                                color: "#FFD700",
-                                level: 11,
-                                levelId: 6
-                            },
-                            targetNextLevel: 400,
-                            userRanking: 0
-                        }
-                    }
-                }
-            };
+            throw error;
         }
     },
 };

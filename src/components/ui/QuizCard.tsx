@@ -70,50 +70,9 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
     const [specialIntervalId, setSpecialIntervalId] = useState<ReturnType<typeof setInterval> | null>(null); // Interval đếm giây UI
     const [specialSecondsLeft, setSpecialSecondsLeft] = useState(15); // Số giây còn lại hiển thị cho câu đặc biệt
 
-
-    // Mock questions for demo
-    const demoQuestions: Question[] = [
-        {
-            questionId: 1,
-            question: "Bệnh nhân có biểu hiện teo và yếu cơ giang ngón cái ngón và rối loạn cảm giác ở ngón cái, ngón trỏ, ngón giữa và nửa ngoài ngón nhân là do?",
-            options: [
-                { answerId: 1, text: "TK trụ bị các khối u chèn ép", isCorrect: false },
-                { answerId: 2, text: "TK quay bị tổn thương", isCorrect: true },
-                { answerId: 3, text: "Tất cả đều sai", isCorrect: false },
-                { answerId: 4, text: "Tất cả đều đúng", isCorrect: false }
-            ],
-            extraData: {
-                image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect fill='%23e5e5e5' width='200' height='200'/%3E%3Ctext x='100' y='100' text-anchor='middle' dy='.3em' fill='%23999' font-size='16'%3EAnatomy Image%3C/text%3E%3C/svg%3E"
-            },
-            detailAnswer: "Thần kinh quay kiểm soát các cơ và cảm giác ở vùng đó."
-        },
-        {
-            questionId: 2,
-            question: "AI là gì?", // Câu hỏi ngắn để test Hot question
-            options: [
-                { answerId: 5, text: "Trí tuệ nhân tạo", isCorrect: true },
-                { answerId: 6, text: "Trí tuệ tự nhiên", isCorrect: false },
-                { answerId: 7, text: "Trí tuệ máy tính", isCorrect: false },
-                { answerId: 8, text: "Trí tuệ điện tử", isCorrect: false }
-            ],
-            detailAnswer: "AI là viết tắt của Artificial Intelligence - Trí tuệ nhân tạo."
-        },
-        {
-            questionId: 3,
-            question: "Trong lập trình web hiện đại, việc sử dụng React.js với TypeScript đã trở thành một tiêu chuẩn phổ biến trong việc phát triển các ứng dụng frontend phức tạp và có khả năng mở rộng cao, đặc biệt là trong các dự án enterprise lớn với yêu cầu về performance và maintainability?", // Câu hỏi rất dài để test Hot question
-            options: [
-                { answerId: 9, text: "Đúng", isCorrect: true },
-                { answerId: 10, text: "Sai", isCorrect: false },
-                { answerId: 11, text: "Không chắc chắn", isCorrect: false },
-                { answerId: 12, text: "Tùy thuộc vào dự án", isCorrect: false }
-            ],
-            detailAnswer: "React.js với TypeScript thực sự là một combo mạnh mẽ cho phát triển web hiện đại."
-        }
-    ];
-
     // Áp dụng logic phát hiện Hot question cho tất cả câu hỏi - sử dụng useMemo để tránh re-render
     const questionsToUse = useMemo(() => {
-        const baseQuestions = questions && questions.length > 0 ? questions : demoQuestions;
+        const baseQuestions = questions && questions.length > 0 ? questions : [];
         return baseQuestions.map(detectHotQuestion);
     }, [questions]);
 

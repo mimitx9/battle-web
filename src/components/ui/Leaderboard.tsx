@@ -8,7 +8,6 @@ interface LeaderboardProps {
     showStreak?: boolean;
     showLastAnswer?: boolean;
     isLoading?: boolean;
-    showMockData?: boolean;
     currentUserId?: number;
 }
 
@@ -17,135 +16,9 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
     showStreak = true, 
     showLastAnswer = false,
     isLoading = false,
-    showMockData = false,
     currentUserId
 }) => {
-    // Mock data nếu không có rankings
-    const mockRankings: RankingEntry[] = [
-        { 
-            userId: 160472, 
-            username: "Minh Kudo", 
-            score: 70, 
-            fullName: "Nguyễn Minh Kudo",
-            avatar: "https://storage.googleapis.com/faquiz2/FaAvatar/160472_1642523732302",
-            globalRank: {
-                userId: 160472,
-                url: "https://storage.googleapis.com/faquiz2/rankiCon/Fe3.png",
-                title: "Sắt III",
-                color: "#666666",
-                level: 3,
-                levelId: 4,
-                extraData: {
-                    currentCountAchieve: 30,
-                    currentCountLose: 23,
-                    currentCountWin: 1,
-                    nextRank: {
-                        url: "https://storage.googleapis.com/faquiz2/rankiCon/Fe2.png",
-                        title: "Sắt II",
-                        color: "#666666",
-                        level: 4,
-                        levelId: 5
-                    },
-                    targetNextLevel: 30,
-                    userRanking: 0
-                }
-            },
-            userBag: {
-                key: 389,
-                battleHint: 10,
-                battleSnow: 5,
-                battleBlockTop1: 3,
-                battleBlockBehind: 2
-            },
-            rank: 1, 
-            isActive: true, 
-            streakCount: 3, 
-            lastAnswerAt: Math.floor(Date.now() / 1000) - 30 // 30 giây trước
-        },
-        { 
-            userId: 94470, 
-            username: "Minh Kudo 2", 
-            score: 65, 
-            fullName: "Nguyễn Minh Kudo 2",
-            avatar: "https://storage.googleapis.com/faquiz2/FaAvatar/94470_1642523732302",
-            globalRank: {
-                userId: 94470,
-                url: "https://storage.googleapis.com/faquiz2/rankiCon/Fe5.png",
-                title: "Sắt V",
-                color: "#666666",
-                level: 1,
-                levelId: 2,
-                extraData: {
-                    currentCountAchieve: 0,
-                    currentCountLose: 0,
-                    currentCountWin: 0,
-                    nextRank: {
-                        url: "https://storage.googleapis.com/faquiz2/rankiCon/Fe4.png",
-                        title: "Sắt IV",
-                        color: "#666666",
-                        level: 2,
-                        levelId: 3
-                    },
-                    targetNextLevel: 10,
-                    userRanking: 0
-                }
-            },
-            userBag: {
-                key: 901,
-                battleHint: 15,
-                battleSnow: 8,
-                battleBlockTop1: 5,
-                battleBlockBehind: 3
-            },
-            rank: 2, 
-            isActive: true, 
-            streakCount: 2, 
-            lastAnswerAt: Math.floor(Date.now() / 1000) - 60 // 1 phút trước
-        },
-        { 
-            userId: 66601, 
-            username: "Minh Kudo 3", 
-            score: 60, 
-            fullName: "Nguyễn Minh Kudo 3",
-            avatar: "https://storage.googleapis.com/faquiz2/FaAvatar/66601_1642523732302",
-            globalRank: {
-                userId: 66601,
-                url: "https://storage.googleapis.com/faquiz2/rankiCon/Fe3.png",
-                title: "Sắt III",
-                color: "#666666",
-                level: 3,
-                levelId: 4,
-                extraData: {
-                    currentCountAchieve: 30,
-                    currentCountLose: 23,
-                    currentCountWin: 1,
-                    nextRank: {
-                        url: "https://storage.googleapis.com/faquiz2/rankiCon/Fe2.png",
-                        title: "Sắt II",
-                        color: "#666666",
-                        level: 4,
-                        levelId: 5
-                    },
-                    targetNextLevel: 30,
-                    userRanking: 0
-                }
-            },
-            userBag: {
-                key: 389,
-                battleHint: 10,
-                battleSnow: 5,
-                battleBlockTop1: 3,
-                battleBlockBehind: 2
-            },
-            rank: 3, 
-            isActive: true, 
-            streakCount: 1, 
-            lastAnswerAt: Math.floor(Date.now() / 1000) - 120 // 2 phút trước
-        },
-    ];
-
-    // Chỉ hiển thị mock data khi được yêu cầu (để demo)
-    const displayRankings = showMockData ? mockRankings : rankings;
+    const displayRankings = rankings;
     const currentUserRef = useRef<HTMLDivElement | null>(null);
     const previousIndexRef = useRef<number | null>(null);
 
