@@ -164,7 +164,8 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
                                             <img
                                                 src={ranking.avatar}
                                                 alt={ranking.fullName}
-                                                className="w-full h-full object-cover"
+                                                className="object-cover"
+                                                loading="lazy"
                                                 onError={(e) => {
                                                     e.currentTarget.style.display = 'none';
                                                 }}
@@ -202,11 +203,13 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
                                     {ranking.universityImage && (
                                         <div
                                             className="relative group flex flex-col items-center justify-center w-16 text-center">
-                                            <img
-                                                src={ranking.universityImage}
-                                                alt={ranking.university || 'University'}
-                                                className="w-16 h-16 mx-auto rounded"
-                                            />
+                                            <div className="w-10 h-10 p-0.5 rounded-full overflow-hidden flex-shrink-0 bg-white">
+                                                <img
+                                                    src={ranking.universityImage}
+                                                    alt={ranking.university || 'University'}
+                                                    className="object-cover"
+                                                />
+                                            </div>
                                             {/* Tooltip */}
                                             {ranking.university && (
                                                 <div

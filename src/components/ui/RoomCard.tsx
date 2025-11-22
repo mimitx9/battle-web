@@ -15,6 +15,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, isSelected = false, onClick }
   const progressPercentage = (room.currentPlayers / room.maxPlayers) * 100;
   const topImages = (room.topUniversityImages || []).filter((img) => typeof img === 'string' && img.trim().length > 0);
   const mainIconSrc = topImages.length > 0 ? topImages[0] : room.categoryIcon;
+  const isUniversityImage = topImages.length > 0 && mainIconSrc === topImages[0];
   const isExternalIcon = typeof mainIconSrc === 'string' && /^(http|https):\/\//.test(mainIconSrc);
 
   return (
@@ -35,7 +36,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, isSelected = false, onClick }
           style={{ backgroundColor: room.categoryBackgroundColor }}
         >
           {mainIconSrc ? (
-            <div className="w-12 h-12 rounded-full overflow-hidden">
+            <div className={`w-12 h-12 rounded-full overflow-hidden bg-white ${isUniversityImage ? 'p-0.5' : ''}`}>
               {isExternalIcon ? (
                 <img
                   src={mainIconSrc}
@@ -43,7 +44,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, isSelected = false, onClick }
                   width={48}
                   height={48}
                   loading="lazy"
-                  className="w-12 h-12 object-cover"
+                  className={isUniversityImage ? "object-cover" : "w-12 h-12 object-cover"}
                 />
               ) : (
                 <Image
@@ -51,7 +52,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, isSelected = false, onClick }
                   alt={room.categoryTitle}
                   width={48}
                   height={48}
-                  className="w-12 h-12 object-cover"
+                  className={isUniversityImage ? "object-cover" : "w-12 h-12 object-cover"}
                 />
               )}
             </div>
@@ -91,11 +92,15 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, isSelected = false, onClick }
 
             {/* Top universities icons - outside progress bar on the far right */}
             {room.currentPlayers > 0 && topImages.length > 0 && (
-              <div className="pointer-events-none absolute top-1/2 -translate-y-1/2 -right-3 z-10">
-                <div className="flex -space-x-2">
+              <div className="pointer-events-none absolute top-1/2 -translate-y-1/2 -right-0 z-10">
+                <div className="flex -space-x-1">
                   {topImages.slice(0, 3).map((img, idx) => (
-                    <div key={idx} className="w-6 h-6 rounded-full overflow-hidden ring-2 ring-white/70 shadow-md bg-white/10">
-                      <img src={img} alt={`uni-${idx}`} width={24} height={24} loading="lazy" className="w-6 h-6 object-cover" />
+                    <div 
+                      key={idx} 
+                      className="w-4 h-4 rounded-full overflow-hidden ring-2 ring-[#04002a] bg-white relative"
+                      style={{ zIndex: 3 - idx }}
+                    >
+                      <img src={img} alt={`uni-${idx}`} loading="lazy" className="object-cover" />
                     </div>
                   ))}
                 </div>
