@@ -35,7 +35,8 @@ class SoundManager {
       skill: '/audio/skill.mp3',
       top3: '/audio/top_3.mp3',
       countdown: '/audio/321.mp3',
-      ost: '/audio/ost.mp3'
+      ost: '/audio/ost.mp3',
+      specialquiz: '/audio/specialquiz.mp3'
     };
 
     Object.entries(soundFiles).forEach(([key, path]) => {
@@ -212,6 +213,7 @@ export const playInsaneSound = () => playSound('insane');
 export const playSkillSound = () => playSound('skill');
 export const playTop3Sound = () => playSound('top3');
 export const playCountdownSound = () => playSound('countdown');
+export const playSpecialQuizSound = () => playSound('specialquiz');
 
 // Export background music functions
 export const startBackgroundMusic = () => soundManager.startBackgroundMusic();

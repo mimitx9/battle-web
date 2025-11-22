@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useImperativeHandle, forwardRef, useMemo } from 'react';
+import React, { useState, useEffect, useImperativeHandle, forwardRef, useMemo, useRef } from 'react';
 import ToolEffect from './ToolEffect';
-import { playClickSound, playStartSound, playCorrectSound, playWrongSound, playNextQuizSound, playInsaneSound, playSkillSound } from '@/lib/soundUtils';
+import { playClickSound, playStartSound, playCorrectSound, playWrongSound, playNextQuizSound, playInsaneSound, playSkillSound, playSpecialQuizSound } from '@/lib/soundUtils';
 
 interface Option {
     answerId: number;
@@ -69,12 +69,56 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
     const [specialTimerId, setSpecialTimerId] = useState<ReturnType<typeof setTimeout> | null>(null); // Timer 15s của câu đặc biệt
     const [specialIntervalId, setSpecialIntervalId] = useState<ReturnType<typeof setInterval> | null>(null); // Interval đếm giây UI
     const [specialSecondsLeft, setSpecialSecondsLeft] = useState(15); // Số giây còn lại hiển thị cho câu đặc biệt
+    const [specialTotalSeconds, setSpecialTotalSeconds] = useState(15); // Tổng thời gian ban đầu của câu đặc biệt
+    const [specialStartTime, setSpecialStartTime] = useState<number | null>(null); // Thời gian bắt đầu câu đặc biệt
+    const [specialProgress, setSpecialProgress] = useState(0); // Progress loading (0-100) để animation mượt
+    const cardRef = useRef<HTMLDivElement>(null); // Ref để lấy kích thước của QuizCard
+    const [cardDimensions, setCardDimensions] = useState({ width: 1000, height: 2000 }); // Kích thước mặc định
+    
+    // Sử dụng ref để lưu các callbacks và tránh re-run useEffect không cần thiết
+    const onSubmitAnswerRef = useRef(onSubmitAnswer);
+    const submitAnswerRef = useRef(submitAnswer);
+    const onTransitionChangeRef = useRef(onTransitionChange);
+    
+    // Cập nhật ref khi props thay đổi
+    useEffect(() => {
+        onSubmitAnswerRef.current = onSubmitAnswer;
+        submitAnswerRef.current = submitAnswer;
+        onTransitionChangeRef.current = onTransitionChange;
+    }, [onSubmitAnswer, submitAnswer, onTransitionChange]);
 
     // Áp dụng logic phát hiện Hot question cho tất cả câu hỏi - sử dụng useMemo để tránh re-render
     const questionsToUse = useMemo(() => {
         const baseQuestions = questions && questions.length > 0 ? questions : [];
         return baseQuestions.map(detectHotQuestion);
     }, [questions]);
+
+    // Theo dõi kích thước của QuizCard để cập nhật SVG
+    useEffect(() => {
+        const updateDimensions = () => {
+            if (cardRef.current) {
+                const { width, height } = cardRef.current.getBoundingClientRect();
+                setCardDimensions({ width, height });
+            }
+        };
+
+        // Cập nhật kích thước khi component mount
+        updateDimensions();
+
+        // Cập nhật kích thước khi window resize
+        window.addEventListener('resize', updateDimensions);
+        
+        // Sử dụng ResizeObserver để theo dõi thay đổi kích thước của element
+        const resizeObserver = new ResizeObserver(updateDimensions);
+        if (cardRef.current) {
+            resizeObserver.observe(cardRef.current);
+        }
+
+        return () => {
+            window.removeEventListener('resize', updateDimensions);
+            resizeObserver.disconnect();
+        };
+    }, []);
 
     // Reset state when questions change
     useEffect(() => {
@@ -93,7 +137,10 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
         setIsProtectedBySnow(false); // Reset trạng thái bảo vệ khi questions thay đổi
         setCorrectStreak(0);
         setIsSpecialQuestion(false);
+        setSpecialTotalSeconds(15);
         setSpecialSecondsLeft(15);
+        setSpecialStartTime(null);
+        setSpecialProgress(0);
         if (specialTimerId) {
             clearTimeout(specialTimerId);
         }
@@ -117,12 +164,19 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
         setCurrentToolType('');
         setIsProtectedBySnow(false); // Reset trạng thái bảo vệ khi chuyển sang câu hỏi tiếp theo
         setIsSpecialQuestion(false); // Tắt giao diện đặc biệt khi sang câu mới
+        setSpecialTotalSeconds(15);
         setSpecialSecondsLeft(15);
+        setSpecialStartTime(null);
+        setSpecialProgress(0);
+        
+        // Cleanup các timer/interval cũ
         if (specialTimerId) {
             clearTimeout(specialTimerId);
+            setSpecialTimerId(null);
         }
         if (specialIntervalId) {
             clearInterval(specialIntervalId);
+            setSpecialIntervalId(null);
         }
         
         // Note: Start sound is now handled by RoomTransitionLoader when entering room
@@ -136,29 +190,66 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
             }, 500);
         }
 
-        // Tạm thời: nếu streak hiện tại là số lẻ (1,3,5,...) => câu này (2,4,6,...) là đặc biệt
-        if (correctStreak > 0 && correctStreak % 10 === 9) {
+        // Thông báo câu hỏi hiện tại thay đổi
+        if (currentQuestion) {
+            onQuestionChange?.(currentQuestion.questionId);
+        }
+    }, [currentQuestionIndex, questionsToUse]);
+
+    // Setup Special Question timer và interval - tách riêng để tránh chạy lại nhiều lần
+    useEffect(() => {
+        // Cleanup trước khi setup mới
+        if (specialTimerId) {
+            clearTimeout(specialTimerId);
+            setSpecialTimerId(null);
+        }
+        if (specialIntervalId) {
+            clearInterval(specialIntervalId);
+            setSpecialIntervalId(null);
+        }
+
+        const currentQuestion = questionsToUse[currentQuestionIndex];
+        if (!currentQuestion) return;
+
+        // Special Quiz xuất hiện ở câu thứ 5, 10, 15, 20... (khi streak = 4, 9, 14, 19...)
+        if (correctStreak > 0 && correctStreak % 5 === 4) {
+        // if (true) {
+            const startTime = Date.now();
             setIsSpecialQuestion(true);
+            setSpecialTotalSeconds(15);
             setSpecialSecondsLeft(15);
+            setSpecialStartTime(startTime);
+            setSpecialProgress(0);
+            // Phát âm thanh khi Special Quiz xuất hiện
+            playSpecialQuizSound();
+            
+            // Tạo interval để đếm ngược - sử dụng biến local để cleanup đúng cách
             const interval = setInterval(() => {
-                setSpecialSecondsLeft(prev => (prev > 0 ? prev - 1 : 0));
+                setSpecialSecondsLeft(prev => {
+                    if (prev <= 0) {
+                        return 0;
+                    }
+                    return prev - 1;
+                });
             }, 1000);
             setSpecialIntervalId(interval);
-            const id = setTimeout(() => {
+            
+            // Tạo timeout để xử lý khi hết thời gian
+            const timerId = setTimeout(() => {
                 const q = questionsToUse[currentQuestionIndex];
                 if (!q) return;
 
+                // Clear interval khi hết thời gian
+                clearInterval(interval);
+
                 // Hết 15s chưa trả lời: submit sai và hiển thị kết quả trước khi chuyển câu
-                onSubmitAnswer(q.questionId, -1 as unknown as number, false, 15000);
-                if (submitAnswer) {
+                onSubmitAnswerRef.current(q.questionId, -1 as unknown as number, false, 15000);
+                if (submitAnswerRef.current) {
                     const difficulty = 'medium';
                     const isInsane = q.isHotQuestion || false;
-                    submitAnswer(q.questionId, false, 15000, difficulty, isInsane, true);
+                    submitAnswerRef.current(q.questionId, false, 15000, difficulty, isInsane, true);
                 }
                 setCorrectStreak(0);
-                if (specialIntervalId) {
-                    clearInterval(specialIntervalId);
-                }
                 // Hiển thị kết quả bị trừ điểm
                 setIsCorrect(false);
                 setShowResult(true);
@@ -166,7 +257,9 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
                 
                 setTimeout(() => {
                     setIsDrawingCard(true);
-                    if (onTransitionChange) onTransitionChange(true);
+                    if (onTransitionChangeRef.current) {
+                        onTransitionChangeRef.current(true);
+                    }
                     playStartSound();
                     if (currentQuestionIndex < questionsToUse.length - 1) {
                         setCurrentQuestionIndex(prev => prev + 1);
@@ -175,19 +268,53 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
                     }
                     setTimeout(() => {
                         setIsDrawingCard(false);
-                        if (onTransitionChange) onTransitionChange(false);
+                        if (onTransitionChangeRef.current) {
+                            onTransitionChangeRef.current(false);
+                        }
                     }, 300);
                 }, 2000);
             }, 15000);
-            setSpecialTimerId(id);
+            setSpecialTimerId(timerId);
+            
+            // Cleanup function - sử dụng biến local để đảm bảo cleanup đúng
+            return () => {
+                clearInterval(interval);
+                clearTimeout(timerId);
+            };
+        }
+    }, [currentQuestionIndex, questionsToUse]);
+
+    // Update progress mượt cho loading border
+    useEffect(() => {
+        if (!isSpecialQuestion || !specialStartTime) {
+            setSpecialProgress(0);
+            return;
         }
 
-        // Thông báo câu hỏi hiện tại thay đổi
-        const q = questionsToUse[currentQuestionIndex];
-        if (q && onQuestionChange) {
-            onQuestionChange(q.questionId);
-        }
-    }, [currentQuestionIndex]);
+        let animationFrameId: number;
+
+        const animate = () => {
+            const now = Date.now();
+            const elapsed = now - specialStartTime!;
+            const totalMs = specialTotalSeconds * 1000;
+            const progress = Math.min((elapsed / totalMs) * 100, 100);
+            setSpecialProgress(progress);
+
+            // Tiếp tục animate nếu chưa đạt 100% và vẫn còn special question
+            if (progress < 100 && isSpecialQuestion && specialStartTime) {
+                animationFrameId = requestAnimationFrame(animate);
+            }
+        };
+
+        // Bắt đầu animation
+        animationFrameId = requestAnimationFrame(animate);
+
+        return () => {
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+            }
+        };
+    }, [isSpecialQuestion, specialStartTime, specialTotalSeconds]);
 
     // Tự động chuyển câu sau 1 giây nếu là câu hỏi cần thanh toán
     useEffect(() => {
@@ -266,7 +393,7 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
             setScore(prev => prev + 1);
         }
 
-        // Cập nhật streak; câu đặc biệt là câu thứ 10 (bật ở effect khi vào câu)
+        // Cập nhật streak; câu đặc biệt là câu thứ 5, 10, 15, 20... (bật ở effect khi vào câu)
         setCorrectStreak(prev => {
             const next = correct ? prev + 1 : 0;
             if (!correct) {
@@ -460,26 +587,88 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
                 <div className={`absolute top-0 bottom-3 left-4 right-4 rounded-3xl`} style={{backgroundColor: '#535073'}}></div>
 
 
+                {/* Special Question Countdown - Outside MainCard, centered at top */}
+                {isSpecialQuestion && (
+                    <div className="absolute top-[-20px] left-1/2 transform -translate-x-1/2 z-30 shadow-md font-bold text-white text-md w-16 text-center py-1 rounded-full whitespace-nowrap special-timer-text">
+                        {specialSecondsLeft}s
+                    </div>
+                )}
+
+                {/* Special Question Loading Border - Bọc ngoài Main Card */}
+                {isSpecialQuestion && (() => {
+                    const strokeWidth = 12;
+                    const borderOffset = strokeWidth / 2; // Offset để stroke nằm bên ngoài
+                    const width = cardDimensions.width;
+                    const height = cardDimensions.height;
+                    const rx = 24; // Border radius
+                    const ry = 24;
+                    
+                    // Tính toán path bắt đầu từ center top, đi theo chiều kim đồng hồ
+                    // Tọa độ trong viewBox (đã bao gồm borderOffset)
+                    const centerX = width / 2 + borderOffset;
+                    const startX = centerX;
+                    const startY = borderOffset;
+                    
+                    // Tạo path bắt đầu từ center top, đi theo chiều kim đồng hồ
+                    // Path: center top -> top right corner -> right edge -> bottom right corner -> bottom edge -> bottom left corner -> left edge -> top left corner -> top edge -> center top
+                    const path = `
+                        M ${startX} ${startY}
+                        L ${width - rx + borderOffset} ${borderOffset}
+                        A ${rx} ${ry} 0 0 1 ${width + borderOffset} ${ry + borderOffset}
+                        L ${width + borderOffset} ${height - ry + borderOffset}
+                        A ${rx} ${ry} 0 0 1 ${width - rx + borderOffset} ${height + borderOffset}
+                        L ${rx + borderOffset} ${height + borderOffset}
+                        A ${rx} ${ry} 0 0 1 ${borderOffset} ${height - ry + borderOffset}
+                        L ${borderOffset} ${ry + borderOffset}
+                        A ${rx} ${ry} 0 0 1 ${rx + borderOffset} ${borderOffset}
+                        L ${startX} ${startY}
+                    `;
+                    
+                    // Tính pathLength chính xác: chu vi của hình chữ nhật bo góc
+                    // Chu vi = 2*(width + height) - 8*rx + 2*π*rx (4 góc, mỗi góc thay thế 2*rx bằng π*rx/2)
+                    const pathLength = 2 * (width + height) - 8 * rx + 2 * Math.PI * rx;
+                    
+                    // Tính stroke-dashoffset: bắt đầu từ center top (0% progress = offset = pathLength)
+                    // Khi progress = 100%, offset = 0 (hoàn thành 1 vòng)
+                    const strokeDashoffset = pathLength - (specialProgress / 100) * pathLength;
+                    
+                    return (
+                        <svg 
+                            className="pointer-events-none absolute" 
+                            style={{
+                                top: `-${borderOffset}px`,
+                                left: `-${borderOffset}px`,
+                                right: `-${borderOffset}px`,
+                                bottom: `calc(28px - ${borderOffset}px)`
+                            }}
+                            viewBox={`0 0 ${width + borderOffset * 2} ${height + borderOffset * 2}`} 
+                            preserveAspectRatio="none"
+                        >
+                            <defs>
+                                <linearGradient id="specialGradient" x1="0" y1="0" x2="1" y2="1">
+                                    <stop offset="0%" stopColor="#FFD600" />
+                                    <stop offset="33%" stopColor="#00F0FF" />
+                                    <stop offset="66%" stopColor="#FF59EE" />
+                                    <stop offset="100%" stopColor="#B6FF1C" />
+                                </linearGradient>
+                            </defs>
+                            <path 
+                                d={path}
+                                fill="none" 
+                                stroke="url(#specialGradient)" 
+                                strokeWidth={strokeWidth}
+                                className="special-border-svg" 
+                                vectorEffect="non-scaling-stroke" 
+                                pathLength={pathLength}
+                                strokeDasharray={pathLength}
+                                strokeDashoffset={strokeDashoffset}
+                            />
+                        </svg>
+                    );
+                })()}
+
                 {/* Main Card - Active */}
-                <div className={`relative bg-white rounded-3xl shadow-2xl overflow-hidden h-[calc(100%-28px)]`}>
-                    {/* Special Question 15s Running Border + Countdown */}
-                    {isSpecialQuestion && (
-                        <>
-                            <svg className="pointer-events-none absolute inset-0 z-20" viewBox="0 0 1000 2000" preserveAspectRatio="none">
-                                <defs>
-                                    <linearGradient id="specialGradient" x1="0" y1="0" x2="1" y2="1">
-                                        <stop offset="0%" stopColor="#ff8a00" />
-                                        <stop offset="50%" stopColor="#ffd700" />
-                                        <stop offset="100%" stopColor="#00e0ff" />
-                                    </linearGradient>
-                                </defs>
-                                <rect x="10" y="10" width="980" height="1980" rx="120" ry="520" fill="none" stroke="url(#specialGradient)" strokeWidth="20" className="special-border-svg" vectorEffect="non-scaling-stroke" pathLength="1000" />
-                            </svg>
-                            <div className="absolute top-3 left-3 z-30 bg-black/60 text-white px-2 py-1 rounded-full text-xs font-semibold">
-                                {specialSecondsLeft}s
-                            </div>
-                        </>
-                    )}
+                <div ref={cardRef} className={`relative bg-white rounded-3xl overflow-hidden h-[calc(100%-28px)]`}>
                     
                     {/* BattleSnow Protection Overlay */}
                     {isProtectedBySnow && (
@@ -706,15 +895,29 @@ const QuizCard = forwardRef<QuizCardRef, QuizCardProps>(({ questions = [], onSub
                     will-change: transform, opacity;
                 }
 
-                /* Special running border for 15s */
+                /* Special loading border */
                 .special-border-svg {
-                    stroke-dasharray: 120 280; /* dash + gap */
                     stroke-linecap: round;
-                    animation: dash-move 1.2s linear infinite;
-                    filter: drop-shadow(0 0 6px rgba(255, 200, 0, 0.6));
                 }
-                @keyframes dash-move {
-                    to { stroke-dashoffset: -400; }
+
+                /* Special timer text color animation */
+                @keyframes special-timer-color {
+                    0% {
+                        background-color: #FFD600;
+                    }
+                    33% {
+                        background-color: #00F0FF;
+                    }
+                    66% {
+                        background-color: #FF59EE;
+                    }
+                    100% {
+                        background-color: #B6FF1C;
+                    }
+                }
+
+                .special-timer-text {
+                    animation: special-timer-color 15s ease-in-out infinite;
                 }
             `}</style>
         </div>
