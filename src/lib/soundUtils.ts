@@ -141,17 +141,12 @@ class SoundManager {
    */
   startBackgroundMusic(): void {
     if (!this.backgroundMusicEnabled || typeof window === 'undefined' || !this.backgroundMusic) {
-      console.log('🎵 Background music not enabled or not available');
       return;
     }
     
-    console.log('🎵 Attempting to start background music...');
     this.backgroundMusic.currentTime = 0;
     this.backgroundMusic.play().catch(error => {
-      console.warn('🎵 Failed to play background music:', error);
-      if (error.name === 'NotAllowedError') {
-        console.log('🎵 Autoplay blocked by browser. User interaction required.');
-      }
+      // Failed to play background music
     });
   }
 

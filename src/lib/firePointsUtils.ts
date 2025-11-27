@@ -15,9 +15,8 @@ interface FirePointsData {
 export const resetFirePoints = (): void => {
   try {
     localStorage.removeItem(FIRE_POINTS_KEY);
-    console.log('🔥 Fire points reset to 0');
   } catch (error) {
-    console.error('Lỗi khi reset đốm lửa:', error);
+    // Error resetting fire points
   }
 };
 

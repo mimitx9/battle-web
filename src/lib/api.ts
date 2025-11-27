@@ -107,12 +107,8 @@ userProfileApi.interceptors.request.use((config) => {
 
 quizApiInstance.interceptors.request.use((config) => {
     const token = localStorage.getItem('auth_token');
-    console.log('🔍 Quiz API Token:', token ? 'Present' : 'Missing');
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
-        console.log('🔍 Authorization header set');
-    } else {
-        console.warn('⚠️ No auth token found for quiz API');
     }
     // Ensure site header is always set
     config.headers.site = 'BATTLE';
@@ -143,7 +139,6 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401) {
-            console.log('🔍 API: 401 error detected, redirecting to login');
             handle401Error();
         }
         return Promise.reject(error);
@@ -154,7 +149,6 @@ userProfileApi.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401) {
-            console.log('🔍 UserProfile API: 401 error detected, redirecting to login');
             handle401Error();
         }
         return Promise.reject(error);
@@ -165,7 +159,6 @@ quizApiInstance.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401) {
-            console.log('🔍 Quiz API: 401 error detected, redirecting to login');
             handle401Error();
         }
         return Promise.reject(error);
@@ -176,7 +169,6 @@ quizBattleApiInstance.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401) {
-            console.log('🔍 Quiz Battle API: 401 error detected, redirecting to login');
             handle401Error();
         }
         return Promise.reject(error);
@@ -187,7 +179,6 @@ masterApiInstance.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401) {
-            console.log('🔍 Master API: 401 error detected, redirecting to login');
             handle401Error();
         }
         return Promise.reject(error);
@@ -197,36 +188,23 @@ masterApiInstance.interceptors.response.use(
 // Auth API
 export const authApiService = {
     login: async (data: LoginRequest): Promise<{ token: string; login: boolean }> => {
-        console.log('🔍 API: Login request data:', data);
-
         const response = await authApi.post<ApiResponse<AuthResponse>>('/auth-mini', data);
-
-        console.log('🔍 API: Raw response:', response);
-        console.log('🔍 API: Response data:', response.data);
-        console.log('🔍 API: Response status:', response.status);
 
         // Check response structure matches expected format
         if (response.data && response.data.data && response.data.data.token) {
-            console.log('🔍 API: Login successful, token received');
             return {
                 token: response.data.data.token,
                 login: response.data.data.login ?? true
             };
         } else {
-            console.error('❌ API: Unexpected login response structure:', response.data);
             throw new Error('Invalid login response structure');
         }
     },
 
     register: async (data: RegisterRequest): Promise<User> => {
-        console.log('🔍 API: Register request data:', data);
-
         const response = await authApi.post<ApiResponse<RegisterUserResponse>>('/register-mini', data);
 
-        console.log('🔍 API: Register response:', response.data);
-
         if (response.data && response.data.data) {
-            console.log('🔍 API: Register successful, user created');
             // Convert RegisterUserResponse to User format
             const userData: User = {
                 userId: response.data.data.id,
@@ -248,20 +226,14 @@ export const authApiService = {
 
     getProfile: async (): Promise<User> => {
         try {
-            console.log('🔍 API: Calling getProfile...');
             const response = await userProfileApi.get('/profile-battle');
-
-            console.log('🔍 API: getProfile response:', response);
-            console.log('🔍 API: getProfile data:', response.data);
 
             // Xử lý response linh hoạt - có thể là ApiResponse hoặc trực tiếp User
             let userData: any;
             if (response.data.data) {
                 userData = response.data.data;
-                console.log('🔍 API: Using nested data structure');
             } else {
                 userData = response.data;
-                console.log('🔍 API: Using direct data structure');
             }
 
             if (userData && userData.rank && !userData.globalRank) {
@@ -269,7 +241,6 @@ export const authApiService = {
                 delete userData.rank;
             }
 
-            console.log('🔍 API: Final user data:', userData);
             return userData as User;
         } catch (error: any) {
             console.error('❌ API: getProfile failed:', error);
@@ -284,7 +255,6 @@ export const authApiService = {
             await api.post('/auth/logout');
         } catch {
             // Logout có thể fail nhưng vẫn clear local state
-            console.log('Logout API failed, but continuing with local cleanup');
         }
     },
 };
@@ -293,9 +263,7 @@ export const authApiService = {
 export const quizBattleApiService = {
     getShoppingMall: async (): Promise<{ meta: { code: number; message: string }, data: Array<{ id: number; itemCode: string; status: string; description: string; quantity: number; priceInKey: number }> }> => {
         try {
-            console.log('🔍 API: Calling getShoppingMall...');
             const response = await quizBattleApiInstance.get('/shopping-mall');
-            console.log('🔍 API: getShoppingMall response:', response);
             return response.data;
         } catch (error: any) {
             console.error('❌ API: getShoppingMall failed:', error);
@@ -306,9 +274,7 @@ export const quizBattleApiService = {
     },
     consumeItem: async (payload: { itemCode: string; quantity: number }): Promise<{ meta: { code: number; message: string }, data?: { userBag: any } }> => {
         try {
-            console.log('🔍 API: Calling consumeItem...', payload);
             const response = await quizBattleApiInstance.post('/consume-item', payload);
-            console.log('🔍 API: consumeItem response:', response);
             return response.data;
         } catch (error: any) {
             console.error('❌ API: consumeItem failed:', error);
@@ -317,11 +283,7 @@ export const quizBattleApiService = {
     },
     getUserBag: async (): Promise<UserBagResponse> => {
         try {
-            console.log('🔍 API: Calling getUserBag...');
             const response = await quizBattleApiInstance.get<UserBagResponse>('/user-bag');
-            
-            console.log('🔍 API: getUserBag response:', response);
-            console.log('🔍 API: getUserBag data:', response.data);
             
             return response.data;
         } catch (error: any) {
@@ -334,11 +296,7 @@ export const quizBattleApiService = {
 
     getQuestionsByCategory: async (requestData: QuestionsByCategoryRequest): Promise<QuestionsByCategoryResponse> => {
         try {
-            console.log('🔍 API: Calling getQuestionsByCategory with categoryCode:', requestData.categoryCode);
             const response = await quizBattleApiInstance.post<QuestionsByCategoryResponse>('/questions/by-category', requestData);
-            
-            console.log('🔍 API: getQuestionsByCategory response:', response);
-            console.log('🔍 API: getQuestionsByCategory data:', response.data);
             
             return response.data;
         } catch (error: any) {
@@ -368,11 +326,9 @@ export const masterApiService = {
         data: Array<{ text: string; code: string; image?: string }>;
     }> => {
         try {
-            console.log('🔍 API: Calling getUniversities...');
             const response = await masterApiInstance.get('/list', {
                 params: { filterType: 'UNIVERSITY' },
             });
-            console.log('🔍 API: getUniversities response:', response);
             return response.data;
         } catch (error: any) {
             console.error('❌ API: getUniversities failed:', error);

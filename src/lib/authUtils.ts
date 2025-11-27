@@ -9,8 +9,6 @@ import { resetFirePoints } from './firePointsUtils';
  */
 export const handle401Error = () => {
     if (typeof window !== 'undefined') {
-        console.log('🔍 Auth Utils: 401 error detected, redirecting to login');
-        
         // Clear auth data
         localStorage.removeItem('auth_token');
         

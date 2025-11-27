@@ -44,6 +44,9 @@ const HomePage: React.FC = () => {
     
     const hasInitializedRef = useRef(false);
     const hasAutoJoinedRef = useRef(false);
+    const roomsStableTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const lastRoomsCountRef = useRef<number>(0);
+    const prevUserIdRef = useRef<string | number | undefined>(undefined);
     const [showQuiz, setShowQuiz] = useState(false);
     const [currentScoreChange, setCurrentScoreChange] = useState<number | undefined>(undefined);
     const quizCardRef = useRef<QuizCardRef>(null);
@@ -56,18 +59,47 @@ const HomePage: React.FC = () => {
     const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const lastReconnectAttemptRef = useRef<number>(0);
     
+    // Reset state khi user thay đổi (logout/login tài khoản khác)
+    useEffect(() => {
+        if (isInitialized) {
+            const currentUserId = user?.userId;
+            const prevUserId = prevUserIdRef.current;
+            
+            // Nếu user thay đổi (logout hoặc login tài khoản khác)
+            if (prevUserId !== undefined && prevUserId !== currentUserId) {
+                // Reset tất cả refs và state
+                hasInitializedRef.current = false;
+                hasAutoJoinedRef.current = false;
+                lastRoomsCountRef.current = 0;
+                if (roomsStableTimeoutRef.current) {
+                    clearTimeout(roomsStableTimeoutRef.current);
+                    roomsStableTimeoutRef.current = null;
+                }
+                // Leave room và reset quiz battle state
+                if (currentRoom) {
+                    leaveRoom();
+                }
+                // Reset local state
+                setShowQuiz(false);
+                setCurrentScoreChange(undefined);
+                setCurrentQuestionId(null);
+                setUsedToolsThisQuestion(new Set());
+            }
+            
+            prevUserIdRef.current = currentUserId;
+        }
+    }, [isInitialized, user?.userId, currentRoom, leaveRoom]);
+
     useEffect(() => {
         if (isInitialized && user) {
             // Nếu chưa initialize lần đầu
             if (!hasInitializedRef.current) {
-                console.log('🔍 HomePage: User authenticated, initializing Global WebSocket for the first time...');
                 hasInitializedRef.current = true;
                 initialize();
                 fetchUserBag();
             } 
             // Nếu đã initialize nhưng WebSocket bị disconnected (chuyển từ connected sang disconnected)
             else if (prevWsConnectedRef.current === true && wsConnected === false) {
-                console.log('🔍 HomePage: WebSocket disconnected, attempting to reconnect...');
                 initialize();
             }
             // Nếu đã initialize nhưng WebSocket không connected (có thể do quay về trang home)
@@ -85,7 +117,6 @@ const HomePage: React.FC = () => {
                 if (timeSinceLastReconnect > 2000) {
                     reconnectTimeoutRef.current = setTimeout(() => {
                         if (!wsConnected && isInitialized && user) {
-                            console.log('🔍 HomePage: WebSocket not connected, attempting to reconnect after returning to home...');
                             lastReconnectAttemptRef.current = Date.now();
                             initialize();
                         }
@@ -112,8 +143,6 @@ const HomePage: React.FC = () => {
     useEffect(() => {
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'visible' && isInitialized && user && hasInitializedRef.current && !wsConnected) {
-                console.log('🔍 HomePage: Page became visible, checking WebSocket connection...');
-                
                 // Clear timeout trước nếu có
                 if (visibilityTimeoutRef.current) {
                     clearTimeout(visibilityTimeoutRef.current);
@@ -122,7 +151,6 @@ const HomePage: React.FC = () => {
                 // Reconnect nếu WebSocket không connected sau 1 giây
                 visibilityTimeoutRef.current = setTimeout(() => {
                     if (!wsConnected && isInitialized && user) {
-                        console.log('🔍 HomePage: WebSocket still not connected after page visible, reconnecting...');
                         initialize();
                     }
                 }, 1000);
@@ -140,39 +168,51 @@ const HomePage: React.FC = () => {
     }, [isInitialized, user, wsConnected, initialize]);
 
     // Auto join room khi có closeCategoryCode và rooms đã được load
+    // Đợi WebSocket connected và đợi số lượng rooms ổn định để đảm bảo nhận đầy đủ danh sách rooms
     useEffect(() => {
-        if (isInitialized && user && user.closeCategoryCode && rooms.length > 0 && !hasAutoJoinedRef.current && !currentRoom) {
-            console.log('🔍 HomePage: Auto joining room with closeCategoryCode:', user.closeCategoryCode);
-            hasAutoJoinedRef.current = true;
-            autoJoinRoom(user.closeCategoryCode);
+        // Clear timeout trước nếu có
+        if (roomsStableTimeoutRef.current) {
+            clearTimeout(roomsStableTimeoutRef.current);
+            roomsStableTimeoutRef.current = null;
         }
-    }, [isInitialized, user, rooms, currentRoom, autoJoinRoom]);
+
+        if (isInitialized && user && user.closeCategoryCode && wsConnected && rooms.length > 0 && !hasAutoJoinedRef.current && !currentRoom) {
+            // Nếu số lượng rooms thay đổi, reset timeout
+            if (lastRoomsCountRef.current !== rooms.length) {
+                lastRoomsCountRef.current = rooms.length;
+            }
+
+            // Đợi 1.5 giây sau khi số lượng rooms không thay đổi để đảm bảo nhận đầy đủ danh sách rooms
+            // (Server có thể gửi message đầu tiên chỉ chứa 1 room, sau đó mới gửi đầy đủ)
+            roomsStableTimeoutRef.current = setTimeout(() => {
+                if (!hasAutoJoinedRef.current && !currentRoom && rooms.length > 0 && user?.closeCategoryCode) {
+                    hasAutoJoinedRef.current = true;
+                    autoJoinRoom(user.closeCategoryCode);
+                }
+            }, 1500);
+        }
+        
+        return () => {
+            if (roomsStableTimeoutRef.current) {
+                clearTimeout(roomsStableTimeoutRef.current);
+                roomsStableTimeoutRef.current = null;
+            }
+        };
+    }, [isInitialized, user, wsConnected, rooms, currentRoom, autoJoinRoom]);
 
     // Show quiz when questions are loaded and cooldown is complete
     useEffect(() => {
-        console.log('🔍 Quiz display check:', {
-            quizQuestions: quizQuestions?.length,
-            showCooldown,
-            showQuiz
-        });
-        
         if (quizQuestions && quizQuestions.length > 0 && !showCooldown) {
-            console.log('🔍 Auto-showing quiz with', quizQuestions.length, 'questions');
             setShowQuiz(true);
         }
     }, [quizQuestions, showCooldown]);
 
     // Handler để xử lý khi click vào room
     const handleRoomClick = async (room: any) => {
-        console.log('🔍 Room clicked:', room);
-        console.log('🔍 Room roomCode:', room.roomCode);
-        console.log('🔍 Room categoryCode:', room.categoryCode);
-        
         // Sử dụng roomCode nếu có, nếu không thì dùng categoryCode
         const roomCodeToUse = room.roomCode || room.categoryCode;
         
         if (roomCodeToUse) {
-            console.log('🔍 Joining room with code:', roomCodeToUse);
             try {
                 await joinRoom(roomCodeToUse);
                 // Gọi API để cập nhật userBag sau khi join room thành công
@@ -193,13 +233,11 @@ const HomePage: React.FC = () => {
 
     // Handler để xử lý khi sử dụng hint từ HelpTool
     const handleHintUsed = (questionId: number) => {
-        console.log('🔍 Hint used for question:', questionId);
         // Logic hint sẽ được xử lý trong QuizCard component
     };
 
     // Handler để xử lý khi HelpTool được sử dụng
     const handleHelpToolUsed = (toolType: string) => {
-        console.log('🔍 Help tool used:', toolType);
         if (toolType === 'battleHint') {
             // Trigger hint functionality trong QuizCard
             if (quizCardRef.current) {
@@ -218,7 +256,6 @@ const HomePage: React.FC = () => {
 
     // Handler để hiển thị tool effect
     const handleShowToolEffect = (toolType: string) => {
-        console.log('🔍 Showing tool effect for:', toolType);
         // Gọi showToolEffect từ QuizCardRef
         if (quizCardRef.current) {
             quizCardRef.current.showToolEffect(toolType);
@@ -261,7 +298,6 @@ const HomePage: React.FC = () => {
 
     // Handler khi quiz hoàn thành
     const handleQuizComplete = (score: number, totalQuestions: number) => {
-        console.log(`🎯 Quiz completed! Score: ${score}/${totalQuestions}`);
         // Có thể thêm logic để lưu điểm số hoặc hiển thị kết quả
     };
 

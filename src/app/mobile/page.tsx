@@ -44,6 +44,9 @@ const MobilePage: React.FC = () => {
     
     const hasInitializedRef = useRef(false);
     const hasAutoJoinedRef = useRef(false);
+    const roomsStableTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const lastRoomsCountRef = useRef<number>(0);
+    const prevUserIdRef = useRef<string | number | undefined>(undefined);
     const [showQuiz, setShowQuiz] = useState(false);
     const [currentScoreChange, setCurrentScoreChange] = useState<number | undefined>(undefined);
     const quizCardRef = useRef<QuizCardRef>(null);
@@ -59,16 +62,46 @@ const MobilePage: React.FC = () => {
     const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const lastReconnectAttemptRef = useRef<number>(0);
     
+    // Reset state khi user thay đổi (logout/login tài khoản khác)
+    useEffect(() => {
+        if (isInitialized) {
+            const currentUserId = user?.userId;
+            const prevUserId = prevUserIdRef.current;
+            
+            // Nếu user thay đổi (logout hoặc login tài khoản khác)
+            if (prevUserId !== undefined && prevUserId !== currentUserId) {
+                // Reset tất cả refs và state
+                hasInitializedRef.current = false;
+                hasAutoJoinedRef.current = false;
+                lastRoomsCountRef.current = 0;
+                if (roomsStableTimeoutRef.current) {
+                    clearTimeout(roomsStableTimeoutRef.current);
+                    roomsStableTimeoutRef.current = null;
+                }
+                // Leave room và reset quiz battle state
+                if (currentRoom) {
+                    leaveRoom();
+                }
+                // Reset local state
+                setShowQuiz(false);
+                setCurrentScoreChange(undefined);
+                setCurrentQuestionId(null);
+                setUsedToolsThisQuestion(new Set());
+                setActiveTab('rooms');
+            }
+            
+            prevUserIdRef.current = currentUserId;
+        }
+    }, [isInitialized, user?.userId, currentRoom, leaveRoom]);
+
     useEffect(() => {
         if (isInitialized && user) {
             if (!hasInitializedRef.current) {
-                console.log('🔍 MobilePage: User authenticated, initializing Global WebSocket...');
                 hasInitializedRef.current = true;
                 initialize();
                 fetchUserBag();
             } 
             else if (prevWsConnectedRef.current === true && wsConnected === false) {
-                console.log('🔍 MobilePage: WebSocket disconnected, attempting to reconnect...');
                 initialize();
             }
             else if (hasInitializedRef.current && !wsConnected) {
@@ -82,7 +115,6 @@ const MobilePage: React.FC = () => {
                 if (timeSinceLastReconnect > 2000) {
                     reconnectTimeoutRef.current = setTimeout(() => {
                         if (!wsConnected && isInitialized && user) {
-                            console.log('🔍 MobilePage: WebSocket not connected, attempting to reconnect...');
                             lastReconnectAttemptRef.current = Date.now();
                             initialize();
                         }
@@ -107,15 +139,12 @@ const MobilePage: React.FC = () => {
     useEffect(() => {
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'visible' && isInitialized && user && hasInitializedRef.current && !wsConnected) {
-                console.log('🔍 MobilePage: Page became visible, checking WebSocket connection...');
-                
                 if (visibilityTimeoutRef.current) {
                     clearTimeout(visibilityTimeoutRef.current);
                 }
                 
                 visibilityTimeoutRef.current = setTimeout(() => {
                     if (!wsConnected && isInitialized && user) {
-                        console.log('🔍 MobilePage: WebSocket still not connected, reconnecting...');
                         initialize();
                     }
                 }, 1000);
@@ -132,19 +161,42 @@ const MobilePage: React.FC = () => {
         };
     }, [isInitialized, user, wsConnected, initialize]);
 
-    // Auto join room khi có closeCategoryCode
+    // Auto join room khi có closeCategoryCode và rooms đã được load
+    // Đợi WebSocket connected và đợi số lượng rooms ổn định để đảm bảo nhận đầy đủ danh sách rooms
     useEffect(() => {
-        if (isInitialized && user && user.closeCategoryCode && rooms.length > 0 && !hasAutoJoinedRef.current && !currentRoom) {
-            console.log('🔍 MobilePage: Auto joining room with closeCategoryCode:', user.closeCategoryCode);
-            hasAutoJoinedRef.current = true;
-            autoJoinRoom(user.closeCategoryCode);
+        // Clear timeout trước nếu có
+        if (roomsStableTimeoutRef.current) {
+            clearTimeout(roomsStableTimeoutRef.current);
+            roomsStableTimeoutRef.current = null;
         }
-    }, [isInitialized, user, rooms, currentRoom, autoJoinRoom]);
+
+        if (isInitialized && user && user.closeCategoryCode && wsConnected && rooms.length > 0 && !hasAutoJoinedRef.current && !currentRoom) {
+            // Nếu số lượng rooms thay đổi, reset timeout
+            if (lastRoomsCountRef.current !== rooms.length) {
+                lastRoomsCountRef.current = rooms.length;
+            }
+
+            // Đợi 1.5 giây sau khi số lượng rooms không thay đổi để đảm bảo nhận đầy đủ danh sách rooms
+            // (Server có thể gửi message đầu tiên chỉ chứa 1 room, sau đó mới gửi đầy đủ)
+            roomsStableTimeoutRef.current = setTimeout(() => {
+                if (!hasAutoJoinedRef.current && !currentRoom && rooms.length > 0 && user?.closeCategoryCode) {
+                    hasAutoJoinedRef.current = true;
+                    autoJoinRoom(user.closeCategoryCode);
+                }
+            }, 1500);
+        }
+        
+        return () => {
+            if (roomsStableTimeoutRef.current) {
+                clearTimeout(roomsStableTimeoutRef.current);
+                roomsStableTimeoutRef.current = null;
+            }
+        };
+    }, [isInitialized, user, wsConnected, rooms, currentRoom, autoJoinRoom]);
 
     // Show quiz when questions are loaded and cooldown is complete
     useEffect(() => {
         if (quizQuestions && quizQuestions.length > 0 && !showCooldown) {
-            console.log('🔍 MobilePage: Auto-showing quiz with', quizQuestions.length, 'questions');
             setShowQuiz(true);
             // Tự động chuyển sang tab quiz khi có câu hỏi
             setActiveTab('quiz');
@@ -180,11 +232,9 @@ const MobilePage: React.FC = () => {
 
     // Handler để xử lý khi click vào room
     const handleRoomClick = async (room: any) => {
-        console.log('🔍 Room clicked:', room);
         const roomCodeToUse = room.roomCode || room.categoryCode;
         
         if (roomCodeToUse) {
-            console.log('🔍 Joining room with code:', roomCodeToUse);
             try {
                 await joinRoom(roomCodeToUse);
                 await fetchUserBag();
@@ -203,11 +253,9 @@ const MobilePage: React.FC = () => {
     };
 
     const handleHintUsed = (questionId: number) => {
-        console.log('🔍 Hint used for question:', questionId);
     };
 
     const handleHelpToolUsed = (toolType: string) => {
-        console.log('🔍 Help tool used:', toolType);
         if (toolType === 'battleHint') {
             if (quizCardRef.current) {
                 quizCardRef.current.useHint();
@@ -222,7 +270,6 @@ const MobilePage: React.FC = () => {
     };
 
     const handleShowToolEffect = (toolType: string) => {
-        console.log('🔍 Showing tool effect for:', toolType);
         if (quizCardRef.current) {
             quizCardRef.current.showToolEffect(toolType);
         }
@@ -255,7 +302,6 @@ const MobilePage: React.FC = () => {
     };
 
     const handleQuizComplete = (score: number, totalQuestions: number) => {
-        console.log(`🎯 Quiz completed! Score: ${score}/${totalQuestions}`);
     };
 
     // Nếu user đã đăng nhập, hiển thị mobile layout

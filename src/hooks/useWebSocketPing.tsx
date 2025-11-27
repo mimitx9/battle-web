@@ -29,7 +29,6 @@ export const useWebSocketPing = (options: UseWebSocketPingOptions = {}): UseWebS
     // Function để gửi ping message
     const sendPing = useCallback(() => {
         if (!websocketRef.current || websocketRef.current.readyState !== WebSocket.OPEN) {
-            console.log('🔍 WebSocket không sẵn sàng để gửi ping');
             return;
         }
 
@@ -40,20 +39,14 @@ export const useWebSocketPing = (options: UseWebSocketPingOptions = {}): UseWebS
             };
             
             websocketRef.current.send(JSON.stringify(pingMessage));
-            
-            // Chỉ log khi debug mode được bật
-            if (debug) {
-                console.log('🔍 Ping message sent:', pingMessage);
-            }
         } catch (error) {
-            console.error('❌ Lỗi khi gửi ping message:', error);
+            // Error sending ping message
         }
     }, []);
 
     // Function để bắt đầu ping
     const startPing = useCallback((websocket: WebSocket | null) => {
         if (!enabled) {
-            console.log('🔍 Ping mechanism bị tắt');
             return;
         }
 
@@ -61,16 +54,11 @@ export const useWebSocketPing = (options: UseWebSocketPingOptions = {}): UseWebS
         stopPing();
 
         if (!websocket) {
-            console.log('🔍 WebSocket không tồn tại, không thể bắt đầu ping');
             return;
         }
 
         websocketRef.current = websocket;
         isPingingRef.current = true;
-
-        if (debug) {
-            console.log(`🔍 Bắt đầu ping mechanism với interval ${interval}ms`);
-        }
 
         // Gửi ping ngay lập tức
         sendPing();
@@ -80,12 +68,11 @@ export const useWebSocketPing = (options: UseWebSocketPingOptions = {}): UseWebS
             if (websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
                 sendPing();
             } else {
-                console.log('🔍 WebSocket không còn kết nối, dừng ping');
                 stopPing();
             }
         }, interval);
 
-    }, [enabled, interval, sendPing, debug]);
+    }, [enabled, interval, sendPing]);
 
     // Function để dừng ping
     const stopPing = useCallback(() => {
@@ -96,11 +83,7 @@ export const useWebSocketPing = (options: UseWebSocketPingOptions = {}): UseWebS
         
         isPingingRef.current = false;
         websocketRef.current = null;
-        
-        if (debug) {
-            console.log('🔍 Ping mechanism đã dừng');
-        }
-    }, [debug]);
+    }, []);
 
     // Cleanup khi component unmount
     useEffect(() => {
